@@ -1,5 +1,8 @@
 # IT342-G6-G4-ECB
 
+
+----- MEMBER 1 -----
+
 <h1 align="left">Hey 👋 What's up?</h1>
 
 ###
