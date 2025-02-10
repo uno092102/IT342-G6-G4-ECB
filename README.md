@@ -43,24 +43,24 @@ Forecast comparison based on historical data.
 • MySQL for Database Management<br>
 
 <h3>Security Implementations:</h3>
-• SSL Encryption
-• OTP Authentication
-•Biometric Authentication (Mobile)
+• SSL Encryption<br>
+• OTP Authentication<br>
+•Biometric Authentication (Mobile)<br>
 
 <h3>Installation & Setup</h3>
 <h4>Prerequisites:</h4>
-• Java 17+
-• Node.js & npm
-• MySQL Server
+• Java 17+<br>
+• Node.js & npm<br>
+• MySQL Server<br>
 
 <h3>Backend Setup: </h3>
-• <b>cd backend </b>
-• <b>mvn spring-boot:run</b>
+• <b>cd backend </b><br>
+• <b>mvn spring-boot:run</b><br>
 
 <h3>Frontend Setup (Web & Mobile):</h3>
-• <b>cd frontend</b>
-• <b>npm install</b>
-• <b>npm start</b>
+• <b>cd frontend</b><br>
+• <b>npm install</b><br>
+• <b>npm start</b><br>
 
 <h2>Usage</h2>
 
@@ -68,10 +68,13 @@ Forecast comparison based on historical data.
 2. Customers log in via web or mobile to check bills, view usage history, and make payments.
 3. Notifications alert customers about due payments and consumption trends.
 
+<br>
+<br>
+<br>
 
 <h1>DEVELOPERS PROFILE</h1>
 
-
+---MEMBER 1---
 <h1 align="left">Hey 👋 What's up?</h1>
 
 ###
