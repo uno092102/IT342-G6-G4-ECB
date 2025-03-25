@@ -1,0 +1,79 @@
+package edu.cit.ecb.Entity;
+
+import java.sql.Date;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@Entity
+public class PaymentEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int paymentId;
+
+    private Date paymentDate;
+    private String paymentMethod;
+    private double amountPaid;
+
+    @ManyToOne
+    @JoinColumn(name = "billID")
+    private BillEntity bill;
+
+    public PaymentEntity() {
+        super();
+    }
+
+    public PaymentEntity(int paymentId, Date paymentDate, String paymentMethod, double amountPaid, BillEntity bill) {
+        super();
+        this.paymentId = paymentId;
+        this.paymentDate = paymentDate;
+        this.paymentMethod = paymentMethod;
+        this.amountPaid = amountPaid;
+        this.bill = bill;
+    }
+
+    public int getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(int paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public Date getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(Date paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public double getAmountPaid() {
+        return amountPaid;
+    }
+
+    public void setAmountPaid(double amountPaid) {
+        this.amountPaid = amountPaid;
+    }
+
+    public BillEntity getBill() {
+        return bill;
+    }
+
+    public void setBill(BillEntity bill) {
+        this.bill = bill;
+    }
+
+}

@@ -1,11 +1,14 @@
 package edu.cit.ecb.Entity;
 
 import java.sql.Date;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class BillEntity {
@@ -18,6 +21,10 @@ public class BillEntity {
     private Date dueDate;
     private int customerID;
     private int tariffID;
+
+    @OneToMany
+    @JoinColumn(name = "paymentId")
+    private List<PaymentEntity> paymentId;
 
     public BillEntity()
     {
@@ -84,6 +91,14 @@ public class BillEntity {
 
     public float getTotalAmount() {
         return totalAmount;
+    }
+
+    public List<PaymentEntity> getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(List<PaymentEntity> paymentId) {
+        this.paymentId = paymentId;
     }
 }
 
