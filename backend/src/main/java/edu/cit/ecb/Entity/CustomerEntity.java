@@ -1,10 +1,16 @@
 package edu.cit.ecb.Entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class CustomerEntity {
@@ -33,6 +39,11 @@ public class CustomerEntity {
     @Column(name = "customerImage", columnDefinition = "LONGBLOB")
     private byte[] customerImage;
 
+    @OneToMany
+    @JoinColumn(name ="consumptionId")
+    @JsonIgnore 
+    private List<ConsumptionEntity> consumptionId;
+    
     public CustomerEntity() {
         super();
     }
@@ -129,6 +140,14 @@ public class CustomerEntity {
 
     public void setCustomerImage(byte[] customerImage) {
         this.customerImage = customerImage;
+    }
+
+    public List<ConsumptionEntity> getConsumptionId() {
+        return consumptionId;
+    }
+
+    public void setConsumptionId(List<ConsumptionEntity> consumptionId) {
+        this.consumptionId = consumptionId;
     }
 
 }
