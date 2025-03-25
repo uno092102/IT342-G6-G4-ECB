@@ -2,10 +2,14 @@ package edu.cit.ecb.Entity;
 
 import java.sql.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class BillEntity {
@@ -13,10 +17,17 @@ public class BillEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int billID;
 
+
+
     private Date billDate;
     private float totalAmount;
     private Date dueDate;
-    private int customerID;
+
+    @ManyToOne
+    @JoinColumn(name = "accountId", nullable = false)
+    @JsonBackReference
+    private CustomerEntity customer;
+
     private int tariffID;
 
     public BillEntity()
@@ -24,14 +35,14 @@ public class BillEntity {
         super();
     }
 
-    public BillEntity(int billID, Date billDate, float totalAmount, Date dueDate, int customerID, int tariffID)
+    public BillEntity(int billID, Date billDate, float totalAmount, Date dueDate, CustomerEntity account, int tariffID)
     {
         super();
         this.billID = billID;
         this.billDate = billDate;
         this.totalAmount = totalAmount;
         this.dueDate = dueDate;
-        this.customerID = customerID;
+        this.customer = customer;
         this.tariffID = tariffID;
     }
 
@@ -45,8 +56,8 @@ public class BillEntity {
         this.billID = billID;
     }
 
-    public void setCustomerID(int customerID) {
-        this.customerID = customerID;
+    public void setCustomer(CustomerEntity customer) {
+        this.customer = customer;
     }
 
     public void setDueDate(Date dueDate) {
@@ -70,8 +81,8 @@ public class BillEntity {
         return billID;
     }
 
-    public int getCustomerID() {
-        return customerID;
+    public CustomerEntity getCustomer() {
+        return customer;
     }
 
     public Date getDueDate() {
