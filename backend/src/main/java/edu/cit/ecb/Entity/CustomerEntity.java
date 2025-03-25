@@ -1,10 +1,16 @@
 package edu.cit.ecb.Entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class CustomerEntity {
@@ -33,12 +39,16 @@ public class CustomerEntity {
     @Column(name = "customerImage", columnDefinition = "LONGBLOB")
     private byte[] customerImage;
 
+    @OneToMany(mappedBy =  "billID", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<BillEntity> billing;
+
     public CustomerEntity() {
         super();
     }
 
     public CustomerEntity(int accountId, String fname, String lname, String email, String phoneNumber, String address, 
-    String username, String password, String role) {
+    String username, String password, String role, List<BillEntity> billing) {
         super();
         this.accountId = accountId;
         this.fname = fname;
@@ -49,6 +59,11 @@ public class CustomerEntity {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.billing = billing;
+    }
+
+    public List<BillEntity> getBilling() {
+        return billing;
     }
 
     public int getAccountId() {
@@ -129,6 +144,10 @@ public class CustomerEntity {
 
     public void setCustomerImage(byte[] customerImage) {
         this.customerImage = customerImage;
+    }
+
+    public void setBilling(List<BillEntity> billing) {
+        this.billing = billing;
     }
 
 }
