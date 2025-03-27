@@ -31,6 +31,15 @@ public class CustomerService {
         return crepo.findAll();
     }
 
+    public CustomerEntity findByAccountId(int accountId) {
+        return crepo.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+    }
+
+    public CustomerEntity findByEmail(String email) {
+        return crepo.findByEmail(email);
+    }
+
     public CustomerEntity updateProfile(int id, CustomerEntity updatedProfile){
         CustomerEntity customer = crepo.findById(id).orElseThrow(() -> new NoSuchElementException("Customer does not exist."));
 
@@ -49,20 +58,14 @@ public class CustomerService {
         Optional<CustomerEntity> customerOptional = crepo.findById(id);
         if(customerOptional.isPresent()){
             CustomerEntity customer = customerOptional.get();
+            customer.getBilling().clear();
+            customer.getPayments().clear();
             crepo.delete(customer);
 
-            return "Customer record successfully deleted";
+            return "Customer with ID \"" + id + "\" record successfully deleted";
         }else{
             return "Customer with ID \"" + id + "\" does not exist.";
         }
-    }
-
-    public CustomerEntity findByEmail(String email){
-        return crepo.findByEmail(email);
-    }
-
-    public CustomerEntity findByAccountId(int accountId){
-        return crepo.findByAccountId(accountId);
     }
 
     public CustomerEntity save(CustomerEntity customer){

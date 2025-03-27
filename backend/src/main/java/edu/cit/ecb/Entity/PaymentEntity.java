@@ -2,12 +2,16 @@ package edu.cit.ecb.Entity;
 
 import java.sql.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.CascadeType;
 
 @Entity
 public class PaymentEntity {
@@ -20,8 +24,13 @@ public class PaymentEntity {
     private double amountPaid;
 
     @ManyToOne
-    @JoinColumn(name = "billID")
+    @JoinColumn(name = "billId", nullable = false)
+    @JsonBackReference
     private BillEntity bill;
+
+    @ManyToOne
+    @JoinColumn(name = "accountId", nullable = false)
+    private CustomerEntity customer;
 
     public PaymentEntity() {
         super();

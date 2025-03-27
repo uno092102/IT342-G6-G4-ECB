@@ -1,11 +1,13 @@
 package edu.cit.ecb.Controller;
 
+import edu.cit.ecb.DTO.BillRequestDTO;
 import edu.cit.ecb.Entity.BillEntity;
 import edu.cit.ecb.Entity.CustomerEntity;
 import edu.cit.ecb.Service.BillService;
 import edu.cit.ecb.Service.CustomerService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,21 +24,26 @@ public class BillController {
     private BillService billService;
 
     @PostMapping("/createBill")
-@PreAuthorize("hasAuthority('SCOPE_write')")
-public ResponseEntity<?> createBill(@RequestBody BillEntity bill, JwtAuthenticationToken token) {
-    System.out.println("Received Bill: " + bill); // Debugging
-    if (bill.getCustomer() == null || bill.getCustomer().getAccountId() == 0) {
-        return ResponseEntity.badRequest().body("Customer information is required.");
-    }
+    @PreAuthorize("hasAuthority('SCOPE_write')")
+    public ResponseEntity<?> createBill(@RequestBody BillRequestDTO billRequest, JwtAuthenticationToken token) {
+        try {
+            CustomerEntity customer = customerService.findByAccountId(billRequest.getCustomerId());
+            if (customer == null) {
+                return ResponseEntity.badRequest().body("Invalid customer ID.");
+            }
 
-    CustomerEntity customer = customerService.findByAccountId(bill.getCustomer().getAccountId());
-    if (customer == null) {
-        return ResponseEntity.badRequest().body("Invalid customer ID.");
-    }
+            BillEntity bill = new BillEntity();
+            bill.setBillDate(billRequest.getBillDate());
+            bill.setTotalAmount(billRequest.getTotalAmount());
+            bill.setDueDate(billRequest.getDueDate());
+            bill.setCustomer(customer);
+            bill.setTariffID(billRequest.getTariffID());
 
-    bill.setCustomer(customer);
-    return ResponseEntity.ok(billService.postBill(bill));
-}
+            return ResponseEntity.ok(billService.postBill(bill));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating bill: " + e.getMessage());
+        }
+    }
 
 
     @GetMapping("/getAllBills")
@@ -47,15 +54,30 @@ public ResponseEntity<?> createBill(@RequestBody BillEntity bill, JwtAuthenticat
 
     @PutMapping("/updateBill/{id}")
     @PreAuthorize("hasAuthority('SCOPE_write')")
-    public BillEntity updateBill(@PathVariable int id, @RequestBody BillEntity bill, JwtAuthenticationToken token) {
-        return billService.updateBill(id, bill);
+    public ResponseEntity<?> updateBill(@PathVariable int id, @RequestBody BillRequestDTO billRequest, JwtAuthenticationToken token) {
+        try {
+            CustomerEntity customer = customerService.findByAccountId(billRequest.getCustomerId());
+            if (customer == null) {
+                return ResponseEntity.badRequest().body("Invalid customer ID.");
+            }
+
+            BillEntity existingBill = billService.findBillById(id);
+            existingBill.setBillDate(billRequest.getBillDate());
+            existingBill.setTotalAmount(billRequest.getTotalAmount());
+            existingBill.setDueDate(billRequest.getDueDate());
+            existingBill.setCustomer(customer);
+            existingBill.setTariffID(billRequest.getTariffID());
+
+            return ResponseEntity.ok(billService.updateBill(id, existingBill));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating bill: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/deleteBill/{id}")
     @PreAuthorize("hasAuthority('SCOPE_write')")
     public String deleteBill(@PathVariable int id, JwtAuthenticationToken token) {
         return billService.deleteBill(id);
-    }
-
-    
+    }  
 }

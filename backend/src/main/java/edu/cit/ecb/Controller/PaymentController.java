@@ -42,10 +42,15 @@ public class PaymentController {
 
     // POST Methods
     @PostMapping("/add")
-    public PaymentEntity addPayment(@RequestParam int billingId, @RequestParam Date paymentDate, 
-                                    @RequestParam String paymentMethod, @RequestParam double amountPaid) {
-        return pserv.addPayment(billingId, paymentDate, paymentMethod, amountPaid);
+    public ResponseEntity<PaymentEntity> addPayment(@RequestBody PaymentEntity paymentRequest) {
+        try {
+            PaymentEntity payment = pserv.addPayment(paymentRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(payment);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
+
 
     // PUT Methods
     @PutMapping("/update/{paymentId}")
@@ -57,8 +62,7 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-
-    // DELETE Methods
+    
     @DeleteMapping("/delete/{paymentId}")
     public ResponseEntity<String> deletePayment(@PathVariable int paymentId) {
         try {

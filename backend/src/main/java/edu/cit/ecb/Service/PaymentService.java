@@ -16,61 +16,58 @@ import edu.cit.ecb.Repository.PaymentRepository;
 @Service
 public class PaymentService {
     @Autowired
-    private PaymentRepository pserv;
+    private PaymentRepository prepo;
 
     @Autowired
-    private BillRepository bserv;
+    private BillRepository brepo;
+
+    @Autowired
+    private CustomerService cserv;
 
     public List<PaymentEntity> findAllPaymentRecords(){
-        return pserv.findAll();
+        return prepo.findAll();
     }
 
     public PaymentEntity savePaymentRecord(PaymentEntity payment){
-        return pserv.save(payment);
+        return prepo.save(payment);
     }
 
     public PaymentEntity updatePaymentEntity (int paymentId, PaymentEntity newPaymentDetails){
-        PaymentEntity existingPayment = pserv.findById(paymentId)
+        PaymentEntity existingPayment = prepo.findById(paymentId)
                 .orElseThrow(() -> new NoSuchElementException ("Payment record not found with id: " + paymentId));
         existingPayment.setPaymentDate(newPaymentDetails.getPaymentDate());
         existingPayment.setPaymentMethod(newPaymentDetails.getPaymentMethod());
         existingPayment.setAmountPaid(newPaymentDetails.getAmountPaid());
-        return pserv.save(existingPayment);
+        return prepo.save(existingPayment);
     }
 
     public String deletePaymentRecord(int paymentId) {
-        PaymentEntity existingPayment = pserv.findById(paymentId)
-                .orElseThrow(() -> new NoSuchElementException("Payment record not found with id: " + paymentId));
-        pserv.delete(existingPayment);
-        return "Payment record deleted successfully with id: " + paymentId;
+        if (!prepo.existsById(paymentId)) {
+            throw new RuntimeException("Payment not found");
+        }
+        prepo.deleteById(paymentId);
+        return "Payment deleted successfully";
     }
 
     public PaymentEntity findByPaymentId(int paymentId){
-        return pserv.findById(paymentId)
+        return prepo.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment record not found with id: " + paymentId));
     }
 
     public List<PaymentEntity> getPaymentRecordsByCustomer(int customerId) {
-        List<BillEntity> bills = bserv.findByCustomerID(customerId);
-        List<PaymentEntity> payments = new ArrayList<>();
-        for (BillEntity bill : bills) {
-            payments.addAll(bill.getPaymentId());
-        }
-        return payments;
+        return prepo.findByCustomer_AccountId(customerId);
     }
     
-    public PaymentEntity addPayment(int billingId, Date paymentDate, String paymentMethod, double amountPaid) {
-        BillEntity billing = bserv.findById(billingId)
-                .orElseThrow(() -> new RuntimeException("Billing record not found with id: " + billingId));
-        
+    public PaymentEntity addPayment(PaymentEntity paymentRequest) {
+        BillEntity billing = brepo.findById(paymentRequest.getBill().getBillID())
+                                           .orElseThrow(() -> new RuntimeException("Bill not found"));
+    
         PaymentEntity payment = new PaymentEntity();
-        payment.setPaymentDate(paymentDate);
-        payment.setPaymentMethod(paymentMethod);
-        payment.setAmountPaid(amountPaid);
+        payment.setPaymentDate(paymentRequest.getPaymentDate());
+        payment.setPaymentMethod(paymentRequest.getPaymentMethod());
+        payment.setAmountPaid(paymentRequest.getAmountPaid());
         payment.setBill(billing);
-        
-        return pserv.save(payment);
-        
+    
+        return prepo.save(payment);
     }
-
 }
