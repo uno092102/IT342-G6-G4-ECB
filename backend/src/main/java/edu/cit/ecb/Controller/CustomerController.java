@@ -74,10 +74,6 @@ public class CustomerController {
                 .body(customer.getCustomerImage());
     }
 
-
-
-
-    //POST Methods
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody SignupDTO signupRequest){
         aserv.signupCustomer(signupRequest);
@@ -116,25 +112,15 @@ public class CustomerController {
         }
     }
 
-
-
-    //PUT Methods
-    @PutMapping("/profile/edit/{accountId}")
+    @PutMapping("/profile/edit/{id}")
     public ResponseEntity<CustomerEntity> editProfile(@PathVariable int id, @RequestBody CustomerEntity updatedProfile){
         CustomerEntity updatedCustomer = cserv.updateProfile(id, updatedProfile);
         return ResponseEntity.ok(updatedCustomer);
     }
 
 
-
-    //DELETE Methods
-    @DeleteMapping("/deletecustomer")
+    @DeleteMapping("/deletecustomer/{id}")
     public String deleteCustomer(@PathVariable int id){
         return cserv.deleteCustomer(id);
     }
-
-    
-
-
-
 }
