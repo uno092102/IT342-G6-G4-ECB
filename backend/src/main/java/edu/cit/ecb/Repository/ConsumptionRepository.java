@@ -9,7 +9,7 @@ import edu.cit.ecb.Entity.ConsumptionEntity;
 
 @Repository
 public interface ConsumptionRepository extends JpaRepository<ConsumptionEntity, Integer> {
-    List<ConsumptionEntity> findByAccountId_AccountId(int accountId); // Use the correct field mapping
+    List<ConsumptionEntity> findByAccountId_AccountId(int accountId); 
 }
 
 

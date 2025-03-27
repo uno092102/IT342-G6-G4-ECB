@@ -5,14 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.cit.ecb.Entity.ConsumptionEntity;
 import edu.cit.ecb.Service.ConsumptionService;
@@ -25,7 +18,7 @@ public class ConsumptionController {
     private ConsumptionService consumptionService;
 
     // Get all consumption records
-    @GetMapping ("/all")
+    @GetMapping("/all")
     public List<ConsumptionEntity> getAllConsumption() {
         return consumptionService.getAllConsumption();
     }
@@ -42,16 +35,15 @@ public class ConsumptionController {
     public List<ConsumptionEntity> getConsumptionByAccountId(@PathVariable int accountId) {
         return consumptionService.getConsumptionByAccountId(accountId);
     }
-    
 
     // Create a new consumption record
-    @PostMapping("/post")
+    @PostMapping("/new")
     public ConsumptionEntity createConsumption(@RequestBody ConsumptionEntity consumption) {
         return consumptionService.saveConsumption(consumption);
     }
 
     // Update an existing consumption record
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}") 
     public ResponseEntity<ConsumptionEntity> updateConsumption(@PathVariable int id, @RequestBody ConsumptionEntity updatedConsumption) {
         Optional<ConsumptionEntity> existingConsumption = consumptionService.getConsumptionById(id);
 
@@ -62,16 +54,23 @@ public class ConsumptionController {
             consumption.setNumDays(updatedConsumption.getNumDays());
             consumption.setAvgKwhPerDay(updatedConsumption.getAvgKwhPerDay());
             consumption.setTotalKwh(updatedConsumption.getTotalKwh());
-            return ResponseEntity.ok(consumptionService.saveConsumption(consumption));
+
+            ConsumptionEntity savedConsumption = consumptionService.saveConsumption(consumption); // Save updated entity
+            return ResponseEntity.ok(savedConsumption);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     // Delete a consumption record
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteConsumption(@PathVariable int id) {
-        consumptionService.deleteConsumption(id);
-        return ResponseEntity.noContent().build();
+        Optional<ConsumptionEntity> existingConsumption = consumptionService.getConsumptionById(id);
+        if (existingConsumption.isPresent()) {
+            consumptionService.deleteConsumption(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

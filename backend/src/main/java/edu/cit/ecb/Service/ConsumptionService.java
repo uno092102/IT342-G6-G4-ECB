@@ -33,7 +33,7 @@ public class ConsumptionService {
 
     // Get consumption by Customer Account ID
     public List<ConsumptionEntity> getConsumptionByAccountId(int accountId) {
-        return consumptionRepository.findByAccountId_AccountId(accountId); // Use the corrected repository method
+        return consumptionRepository.findByAccountId_AccountId(accountId);
     }
 
     
