@@ -3,6 +3,7 @@ package edu.cit.ecb.Entity;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -30,7 +31,7 @@ public class CustomerEntity {
     @Column(unique = true)
     private String username;
 
-    @Column(unique = true)
+    @Column
     private String password;
 
     @Column(name = "role")
@@ -38,17 +39,21 @@ public class CustomerEntity {
 
     @Column(name = "customerImage", columnDefinition = "LONGBLOB")
     private byte[] customerImage;
+    
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // Ensure this is correctly paired with @JsonBackReference in BillEntity
+    private List<BillEntity> bills;
 
-    @OneToMany(mappedBy =  "billID", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<BillEntity> billing;
+    private List<PaymentEntity> payments;
 
     public CustomerEntity() {
         super();
     }
 
     public CustomerEntity(int accountId, String fname, String lname, String email, String phoneNumber, String address, 
-    String username, String password, String role, List<BillEntity> billing) {
+    String username, String password, String role, List<BillEntity> bills) {
         super();
         this.accountId = accountId;
         this.fname = fname;
@@ -59,11 +64,23 @@ public class CustomerEntity {
         this.username = username;
         this.password = password;
         this.role = role;
-        this.billing = billing;
+        this.bills = bills;
     }
 
     public List<BillEntity> getBilling() {
-        return billing;
+        return bills;
+    }
+
+    public void setBilling(List<BillEntity> bills) {
+        this.bills = bills;
+    }
+
+    public List<PaymentEntity> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<PaymentEntity> payments) {
+        this.payments = payments;
     }
 
     public int getAccountId() {
@@ -121,7 +138,6 @@ public class CustomerEntity {
     public void setUsername(String username) {
         this.username = username;
     }
-
     public String getPassword() {
         return password;
     }
@@ -144,10 +160,6 @@ public class CustomerEntity {
 
     public void setCustomerImage(byte[] customerImage) {
         this.customerImage = customerImage;
-    }
-
-    public void setBilling(List<BillEntity> billing) {
-        this.billing = billing;
     }
 
 }
