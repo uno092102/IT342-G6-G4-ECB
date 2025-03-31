@@ -26,6 +26,7 @@ public class TariffEntity {
     }
 
     public TariffEntity(int tariffID, BillEntity billing, String tariffType)
+
     {
         super();
         this.tariffID = tariffID;

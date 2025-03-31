@@ -2,24 +2,23 @@ package edu.cit.ecb.Entity;
 
 import java.util.List;
 
-<<<<<<< Updated upstream
-=======
 import com.fasterxml.jackson.annotation.JsonIgnore;
->>>>>>> Stashed changes
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-<<<<<<< Updated upstream
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+
 import jakarta.persistence.OneToMany;
-=======
+
 import edu.cit.ecb.Enum.Role;
 import jakarta.persistence.*;
->>>>>>> Stashed changes
 
 @Entity
 public class CustomerEntity {
@@ -57,6 +56,11 @@ public class CustomerEntity {
     @JsonManagedReference
     private List<PaymentEntity> payments;
 
+    @OneToMany
+    @JoinColumn(name ="consumptionId")
+    @JsonIgnore 
+    private List<ConsumptionEntity> consumptionId;
+    
     public CustomerEntity() {
         super();
     }
@@ -171,9 +175,6 @@ public class CustomerEntity {
         this.customerImage = customerImage;
     }
 
-<<<<<<< Updated upstream
-}
-=======
     public List<ConsumptionEntity> getConsumptionId() {
         return consumptionId;
     }
@@ -181,5 +182,3 @@ public class CustomerEntity {
     public void setConsumptionId(List<ConsumptionEntity> consumptionId) {
         this.consumptionId = consumptionId;
     }
-}
->>>>>>> Stashed changes
