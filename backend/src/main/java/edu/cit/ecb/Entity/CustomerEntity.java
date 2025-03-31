@@ -2,16 +2,17 @@ package edu.cit.ecb.Entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.CascadeType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 
 @Entity
 public class CustomerEntity {
@@ -48,6 +49,11 @@ public class CustomerEntity {
     @JsonManagedReference
     private List<PaymentEntity> payments;
 
+    @OneToMany
+    @JoinColumn(name ="consumptionId")
+    @JsonIgnore 
+    private List<ConsumptionEntity> consumptionId;
+    
     public CustomerEntity() {
         super();
     }
@@ -160,6 +166,14 @@ public class CustomerEntity {
 
     public void setCustomerImage(byte[] customerImage) {
         this.customerImage = customerImage;
+    }
+
+    public List<ConsumptionEntity> getConsumptionId() {
+        return consumptionId;
+    }
+
+    public void setConsumptionId(List<ConsumptionEntity> consumptionId) {
+        this.consumptionId = consumptionId;
     }
 
 }
