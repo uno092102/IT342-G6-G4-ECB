@@ -32,13 +32,13 @@ public class BillEntity {
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
-    @JsonIgnore // Changed from @JsonManagedReference
+    @JsonBackReference // Changed from @JsonManagedReference
     private CustomerEntity customer;
     
     private int tariffID;
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
+    @JsonManagedReference
     private List<PaymentEntity> payments;
 
     public BillEntity()
