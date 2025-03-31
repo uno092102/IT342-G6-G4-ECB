@@ -2,9 +2,13 @@ package edu.cit.ecb.Entity;
 
 import java.util.List;
 
+<<<<<<< Updated upstream
+=======
+import com.fasterxml.jackson.annotation.JsonIgnore;
+>>>>>>> Stashed changes
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
+<<<<<<< Updated upstream
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +16,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+=======
+import edu.cit.ecb.Enum.Role;
+import jakarta.persistence.*;
+>>>>>>> Stashed changes
 
 @Entity
 public class CustomerEntity {
@@ -35,13 +43,14 @@ public class CustomerEntity {
     private String password;
 
     @Column(name = "role")
-    private String role = "OWNER";
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(name = "customerImage", columnDefinition = "LONGBLOB")
     private byte[] customerImage;
     
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference // Ensure this is correctly paired with @JsonBackReference in BillEntity
+    @JsonManagedReference
     private List<BillEntity> bills;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -53,7 +62,7 @@ public class CustomerEntity {
     }
 
     public CustomerEntity(int accountId, String fname, String lname, String email, String phoneNumber, String address, 
-    String username, String password, String role, List<BillEntity> bills) {
+    String username, String password, Role role, List<BillEntity> bills) {
         super();
         this.accountId = accountId;
         this.fname = fname;
@@ -146,11 +155,11 @@ public class CustomerEntity {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
@@ -162,4 +171,15 @@ public class CustomerEntity {
         this.customerImage = customerImage;
     }
 
+<<<<<<< Updated upstream
 }
+=======
+    public List<ConsumptionEntity> getConsumptionId() {
+        return consumptionId;
+    }
+
+    public void setConsumptionId(List<ConsumptionEntity> consumptionId) {
+        this.consumptionId = consumptionId;
+    }
+}
+>>>>>>> Stashed changes

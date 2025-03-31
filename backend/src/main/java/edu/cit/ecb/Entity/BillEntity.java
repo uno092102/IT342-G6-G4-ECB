@@ -1,13 +1,9 @@
 package edu.cit.ecb.Entity;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +17,7 @@ import jakarta.persistence.Column;
 
 @Entity
 public class BillEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "billid")
@@ -29,64 +26,52 @@ public class BillEntity {
     private Date billDate;
     private float totalAmount;
     private Date dueDate;
+    private String status; // Added Status Field
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
+<<<<<<< Updated upstream
     @JsonBackReference // Changed from @JsonManagedReference
+=======
+    @JsonIgnore
+>>>>>>> Stashed changes
     private CustomerEntity customer;
-    
-    private int tariffID;
+
+    @ManyToOne
+    @JoinColumn(name = "consumptionId", nullable = false)
+    @JsonIgnore
+    private ConsumptionEntity consumption; // Added Relationship
+
+    @OneToMany(mappedBy = "billing", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<TariffEntity> tariffs; // Changed to OneToMany
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<PaymentEntity> payments;
 
-    public BillEntity()
-    {
+    // Constructors
+    public BillEntity() {
         super();
     }
 
-    public BillEntity(int billId, Date billDate, float totalAmount, Date dueDate, CustomerEntity customer, int tariffID)
-    {
+    public BillEntity(int billId, Date billDate, float totalAmount, Date dueDate, CustomerEntity customer, ConsumptionEntity consumption, String status) {
         super();
         this.billId = billId;
         this.billDate = billDate;
         this.totalAmount = totalAmount;
         this.dueDate = dueDate;
         this.customer = customer;
-        this.tariffID = tariffID;
+        this.consumption = consumption;
+        this.status = status;
     }
 
-    public void setBillDate(Date billDate) {
-        this.billDate = billDate;
-    }
-
-    public void setBillID(int billId) {
-        this.billId = billId;
-    }
-
-    public void setCustomer(CustomerEntity customer) {
-        this.customer = customer;
-    }
-
-    public void setDueDate(Date dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public void setTariffID(int tariffID) {
-        this.tariffID = tariffID;
-    }
-
-    public void setTotalAmount(float totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    //GETTER
+    // Getters
     public Date getBillDate() {
         return billDate;
     }
 
-    public int getBillID() {
+    public int getBillId() {
         return billId;
     }
 
@@ -98,28 +83,60 @@ public class BillEntity {
         return dueDate;
     }
 
-    public int getTariffID() {
-        return tariffID;
-    }
-
     public float getTotalAmount() {
         return totalAmount;
-    }
-
-    public List<PaymentEntity> getPaymentId() {
-        return payments;
-    }
-
-    public void setPaymentId(List<PaymentEntity> payments) {
-        this.payments = payments;
     }
 
     public List<PaymentEntity> getPayments() {
         return payments;
     }
 
+    public ConsumptionEntity getConsumption() {
+        return consumption;
+    }
+
+    public List<TariffEntity> getTariffs() {
+        return tariffs;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    // Setters
+    public void setBillDate(Date billDate) {
+        this.billDate = billDate;
+    }
+
+    public void setBillId(int billId) {
+        this.billId = billId;
+    }
+
+    public void setCustomer(CustomerEntity customer) {
+        this.customer = customer;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public void setTotalAmount(float totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
     public void setPayments(List<PaymentEntity> payments) {
         this.payments = payments;
     }
-}
 
+    public void setConsumption(ConsumptionEntity consumption) {
+        this.consumption = consumption;
+    }
+
+    public void setTariffs(List<TariffEntity> tariffs) {
+        this.tariffs = tariffs;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
