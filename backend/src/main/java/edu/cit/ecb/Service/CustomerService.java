@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.cit.ecb.Entity.CustomerEntity;
+import edu.cit.ecb.Enum.Role;
 import edu.cit.ecb.Repository.CustomerRepository;
 
 @Service
@@ -19,11 +20,10 @@ public class CustomerService {
         super();
     }
 
-    public CustomerEntity postCustomerAccount(CustomerEntity customer){
-        if(customer.getRole() == null){
-            customer.setRole("OWNER");
+    public CustomerEntity postCustomerAccount(CustomerEntity customer) {
+        if (customer.getRole() == null) {
+            customer.setRole(Role.CUSTOMER); // Set CUSTOMER as default
         }
-
         return crepo.save(customer);
     }
 
