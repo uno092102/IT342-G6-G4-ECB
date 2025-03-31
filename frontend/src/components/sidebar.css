@@ -1,0 +1,137 @@
+/* Sidebar Container */
+.sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+  }
+  
+  /* Logo Section */
+  .logo-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+  
+  .logo-image {
+    width: 55px;
+    height: auto;
+    margin-right: 12px;
+  }
+  
+  .logo-text {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1E293B;
+    line-height: 1.2;
+    text-align: left;
+  }
+  
+  .logo-text span {
+    display: block;
+  }
+  
+  /* Sidebar Navigation */
+  .sidebar nav {
+    flex: 1;
+  }
+  
+  .sidebar nav a {
+    display: flex;
+    align-items: center;
+    color: #EF4444;
+    font-size: 16px;
+    text-decoration: none;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .sidebar nav a svg {
+    margin-right: 12px;
+    font-size: 18px;
+  }
+  
+  /* Active and Hover Effect */
+  .sidebar nav a.active,
+  .sidebar nav a:hover {
+    background-color: #e1d2d2;
+    color: white;
+  }
+  
+  /* Logout Button - Gradient Orange with Hover Effect */
+  .sidebar button {
+    background: linear-gradient(45deg, #FF8C00, #FF6347); /* Gradient Orange */
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s, color 0.3s;
+    width: 100%; /* Ensures it takes the full container width */
+  }
+  
+  .sidebar button:hover {
+    background: linear-gradient(45deg, #FF6347, #FF4500); /* Darker Orange Gradient */
+    color: white;
+  }
+  
+  /* Scrollbar Styling for Sidebar */
+  .sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: #aaa;
+  }
+  
+  /* Responsive Sidebar */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 80px;
+      padding: 16px;
+    }
+  
+    .logo-section {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .logo-image {
+      width: 40px;
+      height: auto;
+    }
+  
+    .logo-text {
+      font-size: 14px;
+      text-align: center;
+    }
+  
+    .sidebar nav a {
+      justify-content: center;
+      padding: 12px;
+    }
+  
+    .sidebar nav a span {
+      display: none;
+    }
+  
+    /* Logout Button for Mobile */
+    .sidebar button {
+      font-size: 14px;
+      padding: 10px;
+    }
+  }
+  
