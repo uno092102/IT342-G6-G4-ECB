@@ -19,7 +19,6 @@ public class PaymentController {
     @Autowired
     PaymentService pserv;
 
-    // GET Methods
     @GetMapping("/")
     public List<PaymentEntity> getAllPayments() {
         return pserv.findAllPaymentRecords();

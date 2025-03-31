@@ -59,8 +59,8 @@ public class PaymentService {
     }
     
     public PaymentEntity addPayment(PaymentEntity paymentRequest) {
-        BillEntity billing = brepo.findById(paymentRequest.getBill().getBillID())
-                                           .orElseThrow(() -> new RuntimeException("Bill not found"));
+        BillEntity billing = brepo.findById(paymentRequest.getBill().getBillId()) // Correct method name
+        .orElseThrow(() -> new RuntimeException("Bill not found"));
     
         PaymentEntity payment = new PaymentEntity();
         payment.setPaymentDate(paymentRequest.getPaymentDate());
