@@ -17,7 +17,7 @@ public class NotificationEntity {
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
-    private CustomerEntity customer;
+    private UserEntity customer;
 
     private String message;
     private Date notificationDate;
@@ -27,7 +27,7 @@ public class NotificationEntity {
         super();
     }
 
-    public NotificationEntity(CustomerEntity customer, String message, Date notificationDate, boolean isRead) {
+    public NotificationEntity(UserEntity customer, String message, Date notificationDate, boolean isRead) {
         super();
         this.customer = customer;
         this.message = message;
@@ -43,11 +43,11 @@ public class NotificationEntity {
         this.notificationId = notificationId;
     }
 
-    public CustomerEntity getCustomer() {
+    public UserEntity getCustomer() {
         return customer;
     }
 
-    public void setCustomer(CustomerEntity customer) {
+    public void setCustomer(UserEntity customer) {
         this.customer = customer;
     }
 

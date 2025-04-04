@@ -50,7 +50,6 @@ public class PaymentController {
         }
     }
 
-
     // PUT Methods
     @PutMapping("/update/{paymentId}")
     public ResponseEntity<PaymentEntity> updatePayment(@PathVariable int paymentId, @RequestBody PaymentEntity updatedPayment) {

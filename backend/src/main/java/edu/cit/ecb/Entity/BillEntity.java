@@ -3,17 +3,9 @@ package edu.cit.ecb.Entity;
 import java.sql.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
+import com.fasterxml.jackson.annotation.*;
+import jakarta.persistence.*;
+
 
 @Entity
 public class BillEntity {
@@ -30,21 +22,13 @@ public class BillEntity {
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
-<<<<<<< Updated upstream
-    @JsonBackReference // Changed from @JsonManagedReference
-=======
-    @JsonIgnore
->>>>>>> Stashed changes
-    private CustomerEntity customer;
+    @JsonIgnore // Changed from @JsonManagedReference
+    private UserEntity customer;
 
     @ManyToOne
     @JoinColumn(name = "consumptionId", nullable = false)
     @JsonIgnore
     private ConsumptionEntity consumption; // Added Relationship
-
-    @OneToMany(mappedBy = "billing", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<TariffEntity> tariffs; // Changed to OneToMany
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
@@ -55,7 +39,7 @@ public class BillEntity {
         super();
     }
 
-    public BillEntity(int billId, Date billDate, float totalAmount, Date dueDate, CustomerEntity customer, ConsumptionEntity consumption, String status) {
+    public BillEntity(int billId, Date billDate, float totalAmount, Date dueDate, UserEntity customer, ConsumptionEntity consumption, String status) {
         super();
         this.billId = billId;
         this.billDate = billDate;
@@ -75,7 +59,7 @@ public class BillEntity {
         return billId;
     }
 
-    public CustomerEntity getCustomer() {
+    public UserEntity getCustomer() {
         return customer;
     }
 
@@ -95,10 +79,6 @@ public class BillEntity {
         return consumption;
     }
 
-    public List<TariffEntity> getTariffs() {
-        return tariffs;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -112,7 +92,7 @@ public class BillEntity {
         this.billId = billId;
     }
 
-    public void setCustomer(CustomerEntity customer) {
+    public void setCustomer(UserEntity customer) {
         this.customer = customer;
     }
 
@@ -130,10 +110,6 @@ public class BillEntity {
 
     public void setConsumption(ConsumptionEntity consumption) {
         this.consumption = consumption;
-    }
-
-    public void setTariffs(List<TariffEntity> tariffs) {
-        this.tariffs = tariffs;
     }
 
     public void setStatus(String status) {

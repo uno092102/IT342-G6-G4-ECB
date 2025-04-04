@@ -7,41 +7,41 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import edu.cit.ecb.Entity.CustomerEntity;
+import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Enum.Role;
-import edu.cit.ecb.Repository.CustomerRepository;
+import edu.cit.ecb.Repository.UserRepository;
 
 @Service
-public class CustomerService {
+public class UserService {
     @Autowired
-    CustomerRepository crepo;
+    UserRepository crepo;
 
-    public CustomerService(){
+    public UserService(){
         super();
     }
 
-    public CustomerEntity postCustomerAccount(CustomerEntity customer) {
+    public UserEntity postCustomerAccount(UserEntity customer) {
         if (customer.getRole() == null) {
             customer.setRole(Role.CUSTOMER); // Set CUSTOMER as default
         }
         return crepo.save(customer);
     }
 
-    public List<CustomerEntity> getAllCustomers(){
+    public List<UserEntity> getAllCustomers(){
         return crepo.findAll();
     }
 
-    public CustomerEntity findByAccountId(int accountId) {
+    public UserEntity findByAccountId(int accountId) {
         return crepo.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 
-    public CustomerEntity findByEmail(String email) {
+    public UserEntity findByEmail(String email) {
         return crepo.findByEmail(email);
     }
 
-    public CustomerEntity updateProfile(int id, CustomerEntity updatedProfile){
-        CustomerEntity customer = crepo.findById(id).orElseThrow(() -> new NoSuchElementException("Customer does not exist."));
+    public UserEntity updateProfile(int id, UserEntity updatedProfile){
+        UserEntity customer = crepo.findById(id).orElseThrow(() -> new NoSuchElementException("Customer does not exist."));
 
         customer.setFname(updatedProfile.getFname());
         customer.setLname(updatedProfile.getLname());
@@ -55,10 +55,10 @@ public class CustomerService {
     }
 
     public String deleteCustomer(int id){
-        Optional<CustomerEntity> customerOptional = crepo.findById(id);
+        Optional<UserEntity> customerOptional = crepo.findById(id);
         if(customerOptional.isPresent()){
-            CustomerEntity customer = customerOptional.get();
-            customer.getBilling().clear();
+            UserEntity customer = customerOptional.get();
+            customer.getBills().clear();
             customer.getPayments().clear();
             crepo.delete(customer);
 
@@ -68,7 +68,7 @@ public class CustomerService {
         }
     }
 
-    public CustomerEntity save(CustomerEntity customer){
+    public UserEntity save(UserEntity customer){
         return crepo.save(customer);
     }
 

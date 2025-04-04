@@ -17,22 +17,18 @@ public class ChargeController {
     private ChargeService chargeService;
 
     @PostMapping("/add")
-    public ResponseEntity<ChargeEntity> addCharge(@RequestParam int billId,
-                                                   @RequestParam String chargeType,
-                                                   @RequestParam double ratePerKwh,
-                                                   @RequestParam double amount) {
-        ChargeEntity charge = chargeService.addCharge(billId, chargeType, ratePerKwh, amount);
-        return ResponseEntity.ok(charge);
+    public ResponseEntity<ChargeEntity> addCharge(@RequestBody ChargeEntity charge) {
+        return ResponseEntity.ok(chargeService.addCharge(charge));
     }
 
-    @GetMapping("/bill/{billId}")
-    public ResponseEntity<List<ChargeEntity>> getChargesByBillId(@PathVariable int billId) {
-        return ResponseEntity.ok(chargeService.getChargesByBillId(billId));
+    @GetMapping("/getAll")
+    public ResponseEntity<List<ChargeEntity>> getAllCharges() {
+        return ResponseEntity.ok(chargeService.getAllCharge());
     }
 
-    @GetMapping("/type/{chargeType}")
-    public ResponseEntity<List<ChargeEntity>> getChargesByType(@PathVariable String chargeType) {
-        return ResponseEntity.ok(chargeService.getChargesByType(chargeType));
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ChargeEntity> updateCharge(@PathVariable int id, @RequestBody ChargeEntity updated) {
+        return ResponseEntity.ok(chargeService.updateCharge(id, updated));
     }
 
     @DeleteMapping("/delete/{chargeId}")
@@ -40,4 +36,4 @@ public class ChargeController {
         chargeService.deleteCharge(chargeId);
         return ResponseEntity.ok("Charge deleted successfully.");
     }
-} 
+}

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import edu.cit.ecb.Entity.BillEntity;
 import edu.cit.ecb.Entity.ChargeEntity;
+import edu.cit.ecb.Entity.TariffEntity;
 import edu.cit.ecb.Repository.BillRepository;
 import edu.cit.ecb.Repository.ChargeRepository;
 
@@ -17,24 +18,24 @@ public class ChargeService {
     @Autowired
     private ChargeRepository chargeRepository;
 
-    @Autowired
-    private BillRepository billRepository;
-
     // Create or add a new charge
-    public ChargeEntity addCharge(int billId, String chargeType, double ratePerKwh, double amount) {
-        BillEntity bill = billRepository.findById(billId).orElseThrow(() -> new NoSuchElementException("Bill not found"));
-        ChargeEntity charge = new ChargeEntity(bill, chargeType, ratePerKwh, amount);
+    public ChargeEntity addCharge(ChargeEntity charge) {
         return chargeRepository.save(charge);
     }
 
-    // Get all charges for a specific bill
-    public List<ChargeEntity> getChargesByBillId(int billId) {
-        return chargeRepository.findByBill_BillId(billId);
+    //GET
+    public List<ChargeEntity> getAllCharge() {
+        return chargeRepository.findAll();
     }
 
-    // Get all charges of a specific type
-    public List<ChargeEntity> getChargesByType(String chargeType) {
-        return chargeRepository.findByChargeType(chargeType);
+    //UPDATE
+    public ChargeEntity updateCharge(int id, ChargeEntity updatedCharge) {
+        ChargeEntity newCharge = chargeRepository.findById(id).orElseThrow(() ->new NoSuchElementException("Tariff ID does not exist."));
+
+        newCharge.setChargeType(updatedCharge.getChargeType());
+        newCharge.setRatePerKwh(updatedCharge.getRatePerKwh());
+
+        return chargeRepository.save(updatedCharge);
     }
 
     // Delete a charge by ID

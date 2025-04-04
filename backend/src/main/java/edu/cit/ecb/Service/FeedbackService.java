@@ -6,10 +6,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import edu.cit.ecb.Entity.CustomerEntity;
+import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Entity.FeedbackEntity;
 import edu.cit.ecb.Repository.FeedbackRepository;
-import edu.cit.ecb.Repository.CustomerRepository;
+import edu.cit.ecb.Repository.UserRepository;
 
 @Service
 public class FeedbackService {
@@ -18,14 +18,14 @@ public class FeedbackService {
     private FeedbackRepository frepo;
 
     @Autowired
-    private CustomerRepository crepo;
+    private UserRepository crepo;
 
     public List<FeedbackEntity> getAllFeedbackByCustomer(int accountId) {
         return frepo.findByCustomer_AccountId(accountId);
     }
 
     public FeedbackEntity submitFeedback(int accountId, String message) {
-        CustomerEntity customer = crepo.findByAccountId(accountId);
+        UserEntity customer = crepo.findByAccountId(accountId);
         if (customer == null) {
             throw new RuntimeException("Customer not found.");
         }

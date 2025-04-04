@@ -1,24 +1,27 @@
 package edu.cit.ecb.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import edu.cit.ecb.DTO.LoginDTO;
 import edu.cit.ecb.DTO.SignupDTO;
-import edu.cit.ecb.Entity.CustomerEntity;
-import edu.cit.ecb.Repository.CustomerRepository;
+import edu.cit.ecb.Entity.UserEntity;
+import edu.cit.ecb.Repository.UserRepository;
 
 @Service
 public class CustomerAuthentication {
     @Autowired
-    private final CustomerRepository crepo;
+    private final UserRepository crepo;
 
-    public CustomerAuthentication(CustomerRepository customerRepository){
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public CustomerAuthentication(UserRepository customerRepository){
         this.crepo = customerRepository;
     }
 
-    public CustomerEntity signupCustomer(SignupDTO signupRequest){
-        CustomerEntity customer = new CustomerEntity();
+    public UserEntity signupCustomer(SignupDTO signupRequest){
+        UserEntity customer = new UserEntity();
         customer.setFname(signupRequest.getFname());
         customer.setLname(signupRequest.getLname());
         customer.setEmail(signupRequest.getEmail());
@@ -31,8 +34,8 @@ public class CustomerAuthentication {
     }
 
     public boolean loginCustomer(LoginDTO loginRequest){
-        CustomerEntity customer = crepo.findByUsername(loginRequest.getUsername());
+        UserEntity customer = crepo.findByUsername(loginRequest.getUsername());
 
-        return customer != null && loginRequest.getPassword().equals(customer.getPassword());
+        return customer != null && passwordEncoder.matches(loginRequest.getPassword(), customer.getPassword());
     }
 }

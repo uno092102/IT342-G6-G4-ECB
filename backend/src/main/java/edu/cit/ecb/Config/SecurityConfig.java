@@ -1,4 +1,4 @@
-package edu.cit.ecb.Security;
+package edu.cit.ecb.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +24,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/customer/signup", "/customer/login").permitAll()
                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/customer/**").hasAuthority("CUSTOMER")
                 .anyRequest().authenticated()
