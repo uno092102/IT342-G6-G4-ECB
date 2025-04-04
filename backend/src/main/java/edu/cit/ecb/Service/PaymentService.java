@@ -22,7 +22,7 @@ public class PaymentService {
     private BillRepository brepo;
 
     @Autowired
-    private CustomerService cserv;
+    private UserService cserv;
 
     public List<PaymentEntity> findAllPaymentRecords(){
         return prepo.findAll();

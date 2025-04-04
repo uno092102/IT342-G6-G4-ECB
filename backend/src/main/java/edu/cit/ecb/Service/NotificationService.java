@@ -6,10 +6,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import edu.cit.ecb.Entity.CustomerEntity;
+import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Entity.NotificationEntity;
 import edu.cit.ecb.Repository.NotificationRepository;
-import edu.cit.ecb.Repository.CustomerRepository;
+import edu.cit.ecb.Repository.UserRepository;
 
 @Service
 public class NotificationService {
@@ -18,7 +18,7 @@ public class NotificationService {
     private NotificationRepository nrepo;
 
     @Autowired
-    private CustomerRepository crepo;
+    private UserRepository crepo;
 
     public List<NotificationEntity> getAllNotificationsByCustomer(int accountId) {
         return nrepo.findByCustomer_AccountId(accountId);
@@ -29,7 +29,7 @@ public class NotificationService {
     }
 
     public NotificationEntity createNotification(int accountId, String message) {
-        CustomerEntity customer = crepo.findByAccountId(accountId);
+        UserEntity customer = crepo.findByAccountId(accountId);
         if (customer == null) {
             throw new RuntimeException("Customer not found.");
         }

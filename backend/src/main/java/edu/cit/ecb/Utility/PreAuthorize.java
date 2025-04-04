@@ -1,4 +1,4 @@
-package edu.cit.ecb.Controller;
+package edu.cit.ecb.Utility;
 
 public @interface PreAuthorize {
 

@@ -30,7 +30,7 @@ public class PaymentEntity {
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
-    private CustomerEntity customer;
+    private UserEntity customer;
 
     public PaymentEntity() {
         super();

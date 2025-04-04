@@ -1,9 +1,10 @@
 package edu.cit.ecb.Controller;
 
 import edu.cit.ecb.Entity.BillEntity;
-import edu.cit.ecb.Entity.CustomerEntity;
+import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Service.BillService;
-import edu.cit.ecb.Service.CustomerService;
+import edu.cit.ecb.Service.UserService;
+import edu.cit.ecb.Utility.PreAuthorize;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class BillController {
     private BillService billService;
 
     @Autowired
-    private CustomerService customerService;
+    private UserService customerService;
 
     // Generate a Bill with Automatic Calculation
     @PostMapping("/generate/{customerId}/{consumptionId}")
@@ -27,7 +28,7 @@ public class BillController {
     public ResponseEntity<?> generateBill(@PathVariable int customerId, @PathVariable int consumptionId) {
         try {
             // Fetch customer using CustomerService
-            CustomerEntity customer = customerService.findByAccountId(customerId);
+            UserEntity customer = customerService.findByAccountId(customerId);
             if (customer == null) {
                 return ResponseEntity.status(404).body("Customer not found with ID: " + customerId);
             }

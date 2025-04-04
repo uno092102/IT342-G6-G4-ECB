@@ -2,26 +2,13 @@ package edu.cit.ecb.Entity;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
-import jakarta.persistence.OneToMany;
 
 import edu.cit.ecb.Enum.Role;
 import jakarta.persistence.*;
 
-@Entity
-public class CustomerEntity {
+@Entity(name="user_entity")
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int accountId;
@@ -56,16 +43,15 @@ public class CustomerEntity {
     @JsonManagedReference
     private List<PaymentEntity> payments;
 
-    @OneToMany
-    @JoinColumn(name ="consumptionId")
-    @JsonIgnore 
-    private List<ConsumptionEntity> consumptionId;
-    
-    public CustomerEntity() {
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ConsumptionEntity> consumptions;
+
+    public UserEntity() {
         super();
     }
 
-    public CustomerEntity(int accountId, String fname, String lname, String email, String phoneNumber, String address, 
+    public UserEntity(int accountId, String fname, String lname, String email, String phoneNumber, String address, 
     String username, String password, Role role, List<BillEntity> bills) {
         super();
         this.accountId = accountId;
@@ -80,13 +66,14 @@ public class CustomerEntity {
         this.bills = bills;
     }
 
-    public List<BillEntity> getBilling() {
+    public List<BillEntity> getBills() {
         return bills;
     }
-
-    public void setBilling(List<BillEntity> bills) {
+    
+    public void setBills(List<BillEntity> bills) {
         this.bills = bills;
     }
+    
 
     public List<PaymentEntity> getPayments() {
         return payments;
@@ -175,10 +162,12 @@ public class CustomerEntity {
         this.customerImage = customerImage;
     }
 
-    public List<ConsumptionEntity> getConsumptionId() {
-        return consumptionId;
+    public List<ConsumptionEntity> getConsumptions() {
+        return consumptions;
     }
+    
+    public void setConsumptions(List<ConsumptionEntity> consumptions) {
+        this.consumptions = consumptions;
+    }
+}
 
-    public void setConsumptionId(List<ConsumptionEntity> consumptionId) {
-        this.consumptionId = consumptionId;
-    }

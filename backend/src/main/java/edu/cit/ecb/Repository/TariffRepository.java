@@ -7,5 +7,6 @@ import edu.cit.ecb.Entity.TariffEntity;
 
 @Repository
 public interface TariffRepository extends JpaRepository<TariffEntity,Integer>{
+    boolean existsByTariffType(String tariffType);
     public TariffEntity findByTariffID(Integer tariffID);
 }

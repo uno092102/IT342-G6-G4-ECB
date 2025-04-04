@@ -38,9 +38,14 @@ public class ConsumptionController {
 
     // Create a new consumption record
     @PostMapping("/new")
-    public ConsumptionEntity createConsumption(@RequestBody ConsumptionEntity consumption) {
-        return consumptionService.saveConsumption(consumption);
+    public ResponseEntity<?> addConsumption(@RequestParam int customerId, @RequestBody ConsumptionEntity consumption) {
+        try {
+            return ResponseEntity.ok(consumptionService.addConsumption(customerId, consumption));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
+
 
     // Update an existing consumption record
     @PutMapping("/update/{id}") 

@@ -1,12 +1,5 @@
 package edu.cit.ecb.Entity;
-
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 @Entity
 public class TariffEntity {
@@ -14,31 +7,24 @@ public class TariffEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int tariffID;
 
-    @ManyToOne
-    @JoinColumn(name = "billID", nullable = false)
-    private BillEntity billing; 
-
     private String tariffType;
+
+    private double ratePerKwh;
 
     public TariffEntity()
     {
         super();
     }
 
-    public TariffEntity(int tariffID, BillEntity billing, String tariffType)
-
-    {
+    public TariffEntity(int tariffID, String tariffType, double ratePerKwh) {
         super();
         this.tariffID = tariffID;
-        this.billing = billing;
         this.tariffType = tariffType;
+        this.ratePerKwh = ratePerKwh;
     }
+    
 
     //SETTER
-    public void setBilling(BillEntity billing) {
-        this.billing = billing;
-    }
-
     public void setTariffID(int tariffID) {
         this.tariffID = tariffID;
     }
@@ -48,15 +34,19 @@ public class TariffEntity {
     }
 
     //Getter
-    public BillEntity getBilling() {
-        return billing;
-    }
     public int getTariffID() {
         return tariffID;
     }
 
     public String getTariffType() {
         return tariffType;
+    }
+
+    public double getRate() { 
+        return ratePerKwh; 
+    }
+    public void setRate(double ratePerKwh) { 
+        this.ratePerKwh = ratePerKwh; 
     }
 
     
