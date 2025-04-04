@@ -2,6 +2,10 @@ package edu.cit.ecb.Entity;
 
 import java.util.List;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import edu.cit.ecb.Enum.Role;
