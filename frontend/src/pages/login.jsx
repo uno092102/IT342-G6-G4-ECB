@@ -1,13 +1,16 @@
 import React from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom"; // Only import useNavigate
 import "./Login.css"; // Import the CSS file
 
 const Login = () => {
   const navigate = useNavigate(); // Hook for navigation
 
   const handleLogin = () => {
-    // Perform authentication logic here if needed
     navigate("/dashboard"); // Redirect to Dashboard page
+  };
+  
+  const handleSignup = () => {
+    navigate("/signup"); // Redirect to Signup page
   };
 
   return (
@@ -23,8 +26,13 @@ const Login = () => {
 
         <input type="email" placeholder="mail@simmmple.com" className="input-field" />
         <input type="password" placeholder="Min. 8 characters" className="input-field" />
-
+        
+        {/* Sign-up link with onClick handler */}
+        <p className="signup-link">
+          No account? <span onClick={handleSignup} style={{ cursor: 'pointer', color: '#5a50e5', textDecoration: 'underline' }}>Create account</span>
+        </p>
         <button className="login-button" onClick={handleLogin}>Login</button>
+
       </div>
 
       {/* Right Section */}
