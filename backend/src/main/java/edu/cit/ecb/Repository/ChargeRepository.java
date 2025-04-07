@@ -9,6 +9,6 @@ import edu.cit.ecb.Entity.ChargeEntity;
 
 @Repository
 public interface ChargeRepository extends JpaRepository<ChargeEntity, Integer> {
-    List<ChargeEntity> findByBill_BillId(int billId);
+    boolean existsByChargeType(String chargeType);
     List<ChargeEntity> findByChargeType(String chargeType);
 }

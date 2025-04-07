@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import edu.cit.ecb.Entity.CustomerEntity;
-import edu.cit.ecb.Service.CustomerService;
+import edu.cit.ecb.Entity.UserEntity;
+import edu.cit.ecb.Service.UserService;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
 public class AdminController {
 
     @Autowired
-    private CustomerService customerService;
+    private UserService customerService;
 
     // Secure Dashboard
     @GetMapping("/dashboard")
@@ -27,7 +27,7 @@ public class AdminController {
     // Get All Customers
     @GetMapping("/customers")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public List<CustomerEntity> getAllCustomers() {
+    public List<UserEntity> getAllCustomers() {
         return customerService.getAllCustomers();
     }
 
@@ -36,7 +36,7 @@ public class AdminController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateCustomerRole(@PathVariable int accountId, @RequestParam String role) {
         try {
-            CustomerEntity customer = customerService.findByAccountId(accountId);
+            UserEntity customer = customerService.findByAccountId(accountId);
 
             if ("ADMIN".equalsIgnoreCase(role)) {
                 customer.setRole(edu.cit.ecb.Enum.Role.ADMIN);

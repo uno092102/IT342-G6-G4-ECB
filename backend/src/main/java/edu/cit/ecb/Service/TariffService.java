@@ -15,37 +15,33 @@ public class TariffService {
     @Autowired
     TariffRepository trepo;
 
-    public TariffService()
-    {
+    public TariffService() {
         super();
     }
 
     //POST
-    public TariffEntity postTariff(TariffEntity tariff)
-    {
+    public TariffEntity postTariff(TariffEntity tariff) {
         return trepo.save(tariff);
     }
 
     //GET
-    public List<TariffEntity> getAllTariff()
-    {
+    public List<TariffEntity> getAllTariff() {
         return trepo.findAll();
     }
 
     //UPDATE
-    public TariffEntity updateTariff(int id, TariffEntity updatedTariff)
-    {
+    public TariffEntity updateTariff(int id, TariffEntity updatedTariff) {
         TariffEntity newTariff = trepo.findById(id).orElseThrow(() ->new NoSuchElementException("Tariff ID does not exist."));
 
         newTariff.setTariffType(updatedTariff.getTariffType());
+        newTariff.setRate(updatedTariff.getRate());
 
         return trepo.save(newTariff);
     }
 
 
     //DELETE
-    public String deleteTariff(int id)
-    {
+    public String deleteTariff(int id) {
         Optional<TariffEntity> tariffOptional = trepo.findById(id);
         if(tariffOptional.isPresent())
         {

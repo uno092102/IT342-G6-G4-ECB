@@ -6,8 +6,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import edu.cit.ecb.Entity.BillEntity;
 import edu.cit.ecb.Entity.ConsumptionEntity;
+import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Repository.ConsumptionRepository;
+import edu.cit.ecb.Repository.UserRepository;
 
 @Service
 public class ConsumptionService {
@@ -15,6 +18,30 @@ public class ConsumptionService {
     @Autowired
     private ConsumptionRepository consumptionRepository;
 
+    @Autowired
+    private BillService bserv;
+
+    @Autowired
+    private UserRepository userRepository;
+
+
+    public ConsumptionEntity addConsumption(int customerId, ConsumptionEntity consumption) {
+        UserEntity customer = userRepository.findById(customerId)
+            .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        consumption.setCustomer(customer);
+    
+        ConsumptionEntity savedConsumption = consumptionRepository.save(consumption);
+    
+        BillEntity bill = new BillEntity();
+        bill.setCustomer(customer);
+        bill.setConsumption(savedConsumption);
+    
+        bserv.postBill(bill); // Calculates and saves bill
+    
+        return savedConsumption;
+    }
+    
+    
 
     // Get all consumption records
     public List<ConsumptionEntity> getAllConsumption() {
@@ -33,7 +60,7 @@ public class ConsumptionService {
 
     // Get consumption by Customer Account ID
     public List<ConsumptionEntity> getConsumptionByAccountId(int accountId) {
-        return consumptionRepository.findByAccountId_AccountId(accountId);
+        return consumptionRepository.findByCustomer_AccountId(accountId);
     }
 
     

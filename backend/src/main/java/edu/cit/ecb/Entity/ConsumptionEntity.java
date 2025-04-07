@@ -2,12 +2,9 @@ package edu.cit.ecb.Entity;
 
 import java.sql.Date;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.*;
 
 @Entity
 public class ConsumptionEntity {
@@ -18,7 +15,8 @@ public class ConsumptionEntity {
 
     @ManyToOne
     @JoinColumn(name = "accountId",nullable = false)
-    private CustomerEntity accountId;
+    @JsonIgnore
+    private UserEntity customer;
     
     private Date periodFrom;
     private Date periodTo;
@@ -30,10 +28,10 @@ public class ConsumptionEntity {
         super();
     }
 
-    public ConsumptionEntity(int consumptionId, CustomerEntity accountId, Date periodFrom, Date periodTo, int numDays, float avgKwhPerDay, float totalKwh){
+    public ConsumptionEntity(int consumptionId, UserEntity customer, Date periodFrom, Date periodTo, int numDays, float avgKwhPerDay, float totalKwh){
         super();
         this.consumptionId = consumptionId;
-        this.accountId = accountId;
+        this.customer = customer;
         this.periodFrom = periodFrom;
         this.periodTo = periodTo;
         this.numDays = numDays;
@@ -50,12 +48,12 @@ public class ConsumptionEntity {
         this.consumptionId = consumptionId;
     }
 
-    public CustomerEntity getAccountId() {
-        return accountId;
+    public UserEntity getCustomer() {
+        return customer;
     }
 
-    public void setAccountId(CustomerEntity accountId) {
-        this.accountId = accountId;
+    public void setCustomer(UserEntity customer) {
+        this.customer = customer;
     }
 
     public Date getPeriodFrom() {

@@ -19,7 +19,7 @@ public class TariffController {
 
     // POST - Create a new tariff
     @PostMapping("/createTariff")
-    public ResponseEntity<?> createTariff(@RequestBody TariffEntity tariff, JwtAuthenticationToken token) {
+    public ResponseEntity<?> createTariff(@RequestBody TariffEntity tariff) {
         try {
             TariffEntity createdTariff = tariffService.postTariff(tariff);
             return ResponseEntity.ok(createdTariff);
@@ -30,13 +30,13 @@ public class TariffController {
 
     // GET - Retrieve all tariffs
     @GetMapping("/getAll")
-    public ResponseEntity<List<TariffEntity>> getAllTariffs(JwtAuthenticationToken token) {
+    public ResponseEntity<List<TariffEntity>> getAllTariffs() {
         return ResponseEntity.ok(tariffService.getAllTariff());
     }
 
     // PUT - Update an existing tariff
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateTariff(@PathVariable int id, @RequestBody TariffEntity updatedTariff, JwtAuthenticationToken token) {
+    public ResponseEntity<?> updateTariff(@PathVariable int id, @RequestBody TariffEntity updatedTariff) {
         try {
             TariffEntity updated = tariffService.updateTariff(id, updatedTariff);
             return ResponseEntity.ok(updated);
@@ -47,7 +47,7 @@ public class TariffController {
 
     // DELETE - Remove a tariff by ID
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteTariff(@PathVariable int id, JwtAuthenticationToken token) {
+    public ResponseEntity<?> deleteTariff(@PathVariable int id) {
         String message = tariffService.deleteTariff(id);
         return ResponseEntity.ok(message);
     }

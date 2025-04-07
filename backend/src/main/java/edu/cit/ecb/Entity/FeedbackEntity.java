@@ -17,7 +17,7 @@ public class FeedbackEntity {
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
-    private CustomerEntity customer;
+    private UserEntity customer;
 
     private String message;
     private Date feedbackDate;
@@ -26,7 +26,7 @@ public class FeedbackEntity {
         super();
     }
 
-    public FeedbackEntity(CustomerEntity customer, String message, Date feedbackDate) {
+    public FeedbackEntity(UserEntity customer, String message, Date feedbackDate) {
         super();
         this.customer = customer;
         this.message = message;
@@ -41,11 +41,11 @@ public class FeedbackEntity {
         this.feedbackId = feedbackId;
     }
 
-    public CustomerEntity getCustomer() {
+    public UserEntity getCustomer() {
         return customer;
     }
 
-    public void setCustomer(CustomerEntity customer) {
+    public void setCustomer(UserEntity customer) {
         this.customer = customer;
     }
 

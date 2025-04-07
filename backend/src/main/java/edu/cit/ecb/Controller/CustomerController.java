@@ -1,19 +1,19 @@
 package edu.cit.ecb.Controller;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.cit.ecb.DTO.LoginDTO;
 import edu.cit.ecb.DTO.SignupDTO;
-import edu.cit.ecb.Entity.CustomerEntity;
+import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Enum.Role;
 import edu.cit.ecb.Service.CustomerAuthentication;
-import edu.cit.ecb.Service.CustomerService;
+import edu.cit.ecb.Service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @RestController
@@ -21,7 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class CustomerController {
 
     @Autowired
-    CustomerService cserv;
+    UserService cserv;
 
     @Autowired
     CustomerAuthentication aserv;
@@ -42,9 +42,9 @@ public class CustomerController {
     // View Customer Profile (Only accessible by the authenticated customer)
     @GetMapping("/profile")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<CustomerEntity> getCustomerProfile(@AuthenticationPrincipal CustomerEntity customerEntity) {
+    public ResponseEntity<UserEntity> getCustomerProfile(@AuthenticationPrincipal UserEntity customerEntity) {
         String email = customerEntity.getEmail();
-        CustomerEntity customer = cserv.findByEmail(email);
+        UserEntity customer = cserv.findByEmail(email);
         if (customer != null) {
             return ResponseEntity.ok(customer);
         } else {
@@ -56,7 +56,7 @@ public class CustomerController {
     @GetMapping("/profile/image/{accountId}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<byte[]> getProfileImage(@PathVariable int accountId) {
-        CustomerEntity customer = cserv.findByAccountId(accountId);
+        UserEntity customer = cserv.findByAccountId(accountId);
         if (customer == null || customer.getCustomerImage() == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -67,7 +67,7 @@ public class CustomerController {
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody SignupDTO signupRequest) {
         try {
-            CustomerEntity customer = new CustomerEntity();
+            UserEntity customer = new UserEntity();
             customer.setFname(signupRequest.getFname());
             customer.setLname(signupRequest.getLname());
             customer.setEmail(signupRequest.getEmail());
@@ -101,7 +101,7 @@ public class CustomerController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<?> uploadCustomerImage(@RequestParam("accountId") int accountId, @RequestParam("ownerImage") MultipartFile file) {
         try {
-            CustomerEntity customer = cserv.findByAccountId(accountId);
+            UserEntity customer = cserv.findByAccountId(accountId);
             if (customer == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found.");
             }
@@ -116,8 +116,8 @@ public class CustomerController {
     // Edit Customer Profile (Only customers can edit their own profiles)
     @PutMapping("/profile/edit/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<CustomerEntity> editProfile(@PathVariable int id, @RequestBody CustomerEntity updatedProfile) {
-        CustomerEntity updatedCustomer = cserv.updateProfile(id, updatedProfile);
+    public ResponseEntity<UserEntity> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
+        UserEntity updatedCustomer = cserv.updateProfile(id, updatedProfile);
         return ResponseEntity.ok(updatedCustomer);
     }
 }
