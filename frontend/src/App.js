@@ -1,41 +1,21 @@
-
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/dashboard';
-import GenerateBill from './pages/generateBill';
-import Login from './pages/login';
-import Logout from './pages/logout';
-import ManageUser from './pages/manageUser';
-import Profile from './pages/profile';
-import Reports from './pages/reports';
-import Signup from './pages/signup';
-
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
-const Dashboard = () => {
-  return <h1>Welcome to the Dashboard</h1>; // Replace with your actual Dashboard component
-};
-
-
-const App = () => {
+function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        {/* Default route redirects to Login */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-
-        <Route path="/generate-bill" element={<GenerateBill />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/manage-users" element={<ManageUser />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/signup" element={<Signup />} />
-
       </Routes>
     </Router>
   );
-};
+}
 
 export default App;
