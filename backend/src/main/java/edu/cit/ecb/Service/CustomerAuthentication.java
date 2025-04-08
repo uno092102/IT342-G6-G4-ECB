@@ -2,6 +2,7 @@ package edu.cit.ecb.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import edu.cit.ecb.DTO.LoginDTO;
@@ -14,7 +15,8 @@ public class CustomerAuthentication {
     @Autowired
     private final UserRepository crepo;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public CustomerAuthentication(UserRepository customerRepository){
         this.crepo = customerRepository;
@@ -28,14 +30,30 @@ public class CustomerAuthentication {
         customer.setPhoneNumber(signupRequest.getPhoneNumber());
         customer.setAddress(signupRequest.getAddress());
         customer.setUsername(signupRequest.getUsername());
-        customer.setPassword(signupRequest.getPassword());
-
+        customer.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         return crepo.save(customer);
     }
 
-    public boolean loginCustomer(LoginDTO loginRequest){
-        UserEntity customer = crepo.findByUsername(loginRequest.getUsername());
-
-        return customer != null && passwordEncoder.matches(loginRequest.getPassword(), customer.getPassword());
-    }
+    public boolean loginCustomer(LoginDTO loginRequest) {
+        String input = loginRequest.getUsername();
+        UserEntity customer = crepo.findByUsername(input);
+    
+        if (customer == null) {
+            customer = crepo.findByEmail(input);
+        }
+    
+        if (customer != null) {
+            boolean matched = passwordEncoder.matches(loginRequest.getPassword(), customer.getPassword());
+            if (matched) {
+                System.out.println("Login success for: " + input);
+                return true;
+            } else {
+                System.out.println("Password mismatch for: " + input);
+            }
+        } else {
+            System.out.println("No user found for: " + input);
+        }
+    
+        return false;
+    }    
 }

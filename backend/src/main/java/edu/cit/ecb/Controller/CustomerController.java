@@ -1,5 +1,7 @@
 package edu.cit.ecb.Controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import edu.cit.ecb.Enum.Role;
 import edu.cit.ecb.Service.CustomerAuthentication;
 import edu.cit.ecb.Service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @RestController
 @RequestMapping("/customer")
@@ -120,4 +123,27 @@ public class CustomerController {
         UserEntity updatedCustomer = cserv.updateProfile(id, updatedProfile);
         return ResponseEntity.ok(updatedCustomer);
     }
+
+    @GetMapping("/userinfo")
+    public Map<String, Object> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {
+        return principal.getAttributes();
+    }
+
+    @PutMapping("/complete-profile/{email}")
+    public ResponseEntity<?> completeGoogleProfile(@PathVariable String email, @RequestBody UserEntity userInput) {
+        UserEntity user = cserv.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+
+        user.setFname(userInput.getFname());
+        user.setLname(userInput.getLname());
+        user.setPhoneNumber(userInput.getPhoneNumber());
+        user.setAddress(userInput.getAddress());
+
+        cserv.save(user);
+        return ResponseEntity.ok("Profile completed.");
+    }
+
+
 }

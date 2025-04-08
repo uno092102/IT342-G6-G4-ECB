@@ -1,13 +1,42 @@
-import React from "react";
+import React, { useState} from "react";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    fname: "",
+    lname: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    username: "",
+    password: "",
+  });
 
-  const handleRegister = (e) => {
+  const [error, setError] = useState("");
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // You can add form validation and API calls here
-    navigate("/login"); // Navigate to Login page
+    try {
+      const response = await fetch("http://localhost:8080/customer/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        navigate("/login");
+      } else {
+        const msg = await response.text();
+        setError(msg);
+      }
+    } catch (err) {
+      setError("Server error.");
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
@@ -17,60 +46,17 @@ const Register = () => {
           <h2 className="text-2xl font-bold mb-1">ECB Register</h2>
           <p className="text-sm text-gray-500 mb-6">Enter your information to register</p>
           <form className="space-y-4" onSubmit={handleRegister}>
-            <div>
-              <label className="block font-medium mb-1 text-sm">
-                First Name<span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="John"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-sm">
-                Last Name<span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Doe"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-sm">
-                Email<span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                placeholder="johndoe@example.com"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-sm">
-                Password<span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                placeholder="8-16 characters"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-1 text-sm">
-                Confirm Password<span className="text-red-500">*</span>
-              </label>
-              <input
-                type="password"
-                placeholder="8-16 characters"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-md"
-            >
+            <input name="fname" placeholder="First Name" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
+            <input name="lname" placeholder="Last Name" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
+            <input name="email" type="email" placeholder="Email" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
+            <input name="phoneNumber" placeholder="Phone Number" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
+            <input name="address" placeholder="Address" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
+            <input name="username" placeholder="Username" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
+            <input name="password" type="password" placeholder="Password" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <button type="submit" className="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-md">
               Register
             </button>
           </form>
@@ -83,7 +69,7 @@ const Register = () => {
           <h1 className="text-3xl font-bold leading-tight">
             Electricity <br />
             Consumption <br />
-            Bill
+            Billing
           </h1>
         </div>
       </div>
