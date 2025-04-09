@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,9 +16,11 @@ import edu.cit.ecb.DTO.LoginDTO;
 import edu.cit.ecb.DTO.SignupDTO;
 import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Enum.Role;
+import edu.cit.ecb.Repository.UserRepository;
 import edu.cit.ecb.Service.CustomerAuthentication;
 import edu.cit.ecb.Service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @RestController
@@ -29,13 +33,17 @@ public class CustomerController {
     @Autowired
     CustomerAuthentication aserv;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // GET Home
     @GetMapping("/")
-    public String index() {
-        return "Welcome to the Electricity Consumption Billing System";
+    public ResponseEntity<String> index() {
+        return ResponseEntity.ok("✅ Electricity Consumption Billing Backend is running!");
     }
+    
 
     @GetMapping("/print")
     public String print() {
@@ -119,10 +127,31 @@ public class CustomerController {
     // Edit Customer Profile (Only customers can edit their own profiles)
     @PutMapping("/profile/edit/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<UserEntity> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
-        UserEntity updatedCustomer = cserv.updateProfile(id, updatedProfile);
-        return ResponseEntity.ok(updatedCustomer);
+    public ResponseEntity<?> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+
+        UserEntity loggedInUser = userRepository.findByUsername(currentUsername);
+
+        if (loggedInUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
+        }
+
+        if (loggedInUser.getAccountId() != id) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only update your own profile.");
+        }
+
+        try {
+            UserEntity updated = cserv.updateProfile(id, updatedProfile);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update profile.");
+        }
     }
+
+
+
 
     @GetMapping("/userinfo")
     public Map<String, Object> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {

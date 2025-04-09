@@ -1,8 +1,10 @@
 package edu.cit.ecb.Controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +29,19 @@ public class ChargeController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ChargeEntity> updateCharge(@PathVariable int id, @RequestBody ChargeEntity updated) {
-        return ResponseEntity.ok(chargeService.updateCharge(id, updated));
+    public ResponseEntity<?> updateCharge(@PathVariable int id, @RequestBody ChargeEntity updatedCharge) {
+        Optional<ChargeEntity> existingOpt = chargeService.findById(id); // Ensure this method exists
+
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Charge not found.");
+        }
+
+        ChargeEntity existing = existingOpt.get();
+        existing.setChargeType(updatedCharge.getChargeType());
+        existing.setRatePerKwh(updatedCharge.getRatePerKwh());
+
+        chargeService.save(existing);
+        return ResponseEntity.ok("Charge updated successfully.");
     }
 
     @DeleteMapping("/delete/{chargeId}")

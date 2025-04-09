@@ -26,6 +26,12 @@ public class FeedbackController {
         }
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<FeedbackEntity>> getAllFeedback() {
+        List<FeedbackEntity> feedbackList = feedbackService.getAllFeedback();
+        return ResponseEntity.ok(feedbackList);
+    }
+
     @PostMapping("/submit")
     public ResponseEntity<?> submitFeedback(@RequestParam int accountId, @RequestParam String message) {
         try {

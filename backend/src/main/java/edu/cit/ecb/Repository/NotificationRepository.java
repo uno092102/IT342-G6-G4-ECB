@@ -11,4 +11,5 @@ import edu.cit.ecb.Entity.NotificationEntity;
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Integer> {
     List<NotificationEntity> findByCustomer_AccountId(int accountId);
     List<NotificationEntity> findByIsReadFalseAndCustomer_AccountId(int accountId);
+    List<NotificationEntity> findByIsReadTrueAndCustomer_AccountId(int accountId);
 }

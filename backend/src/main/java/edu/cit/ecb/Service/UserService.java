@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import edu.cit.ecb.Entity.UserEntity;
@@ -15,6 +16,8 @@ import edu.cit.ecb.Repository.UserRepository;
 public class UserService {
     @Autowired
     UserRepository crepo;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public UserService(){
         super();
@@ -40,19 +43,31 @@ public class UserService {
         return crepo.findByEmail(email);
     }
 
-    public UserEntity updateProfile(int id, UserEntity updatedProfile){
-        UserEntity customer = crepo.findById(id).orElseThrow(() -> new NoSuchElementException("Customer does not exist."));
-
-        customer.setFname(updatedProfile.getFname());
-        customer.setLname(updatedProfile.getLname());
-        customer.setEmail(updatedProfile.getEmail());
-        customer.setPhoneNumber(updatedProfile.getPhoneNumber());
-        customer.setAddress(updatedProfile.getAddress());
-        customer.setUsername(updatedProfile.getUsername());
-        customer.setPassword(updatedProfile.getPassword());
-
-        return crepo.save(customer);
+    public UserEntity findByUsername(String username) {
+        return crepo.findByUsername(username);
     }
+    
+    public UserEntity updateProfile(int id, UserEntity updatedProfile) {
+        UserEntity existingUser = crepo.findByAccountId(id);
+    
+        if (existingUser == null) {
+            throw new RuntimeException("User not found with ID: " + id);
+        }
+    
+        existingUser.setFname(updatedProfile.getFname());
+        existingUser.setLname(updatedProfile.getLname());
+        existingUser.setEmail(updatedProfile.getEmail());
+        existingUser.setPhoneNumber(updatedProfile.getPhoneNumber());
+        existingUser.setAddress(updatedProfile.getAddress());
+        existingUser.setUsername(updatedProfile.getUsername());
+    
+        if (updatedProfile.getPassword() != null && !updatedProfile.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(updatedProfile.getPassword()));
+        }
+    
+        return crepo.save(existingUser);
+    }
+    
 
     public String deleteCustomer(int id){
         Optional<UserEntity> customerOptional = crepo.findById(id);

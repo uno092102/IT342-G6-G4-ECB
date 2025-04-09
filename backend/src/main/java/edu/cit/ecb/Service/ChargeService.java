@@ -2,6 +2,7 @@ package edu.cit.ecb.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,5 +45,13 @@ public class ChargeService {
             throw new NoSuchElementException("Charge not found with ID: " + chargeId);
         }
         chargeRepository.deleteById(chargeId);
+    }
+
+    public Optional<ChargeEntity> findById(int id) {
+        return chargeRepository.findById(id);
+    }
+    
+    public ChargeEntity save(ChargeEntity charge) {
+        return chargeRepository.save(charge);
     }
 }

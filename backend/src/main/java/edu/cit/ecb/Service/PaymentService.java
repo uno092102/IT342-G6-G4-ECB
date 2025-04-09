@@ -70,4 +70,8 @@ public class PaymentService {
     
         return prepo.save(payment);
     }
+
+    public PaymentEntity save(PaymentEntity payment) {
+        return prepo.save(payment);
+    }
 }
