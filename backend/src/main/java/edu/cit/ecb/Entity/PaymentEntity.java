@@ -36,13 +36,14 @@ public class PaymentEntity {
         super();
     }
 
-    public PaymentEntity(int paymentId, Date paymentDate, String paymentMethod, double amountPaid, BillEntity bill) {
+    public PaymentEntity(int paymentId, Date paymentDate, String paymentMethod, double amountPaid, BillEntity bill, UserEntity customer) {
         super();
         this.paymentId = paymentId;
         this.paymentDate = paymentDate;
         this.paymentMethod = paymentMethod;
         this.amountPaid = amountPaid;
         this.bill = bill;
+        this.customer = customer;
     }
 
     public int getPaymentId() {
@@ -83,6 +84,14 @@ public class PaymentEntity {
 
     public void setBill(BillEntity bill) {
         this.bill = bill;
+    }
+
+    public UserEntity getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(UserEntity customer) {
+        this.customer = customer;
     }
 
 }

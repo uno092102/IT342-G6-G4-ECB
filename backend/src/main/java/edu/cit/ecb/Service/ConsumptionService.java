@@ -41,6 +41,22 @@ public class ConsumptionService {
         return savedConsumption;
     }
     
+    public ConsumptionEntity updateConsumption(int id, ConsumptionEntity input) {
+        ConsumptionEntity existing = consumptionRepository.findById(id).orElseThrow(() ->
+            new RuntimeException("Consumption record not found."));
+    
+        if (input.getAvgKwhPerDay() != 0) {
+            existing.setAvgKwhPerDay(input.getAvgKwhPerDay());
+        }
+    
+        if (input.getTotalKwh() != 0) {
+            existing.setTotalKwh(input.getTotalKwh());
+        }
+    
+        // Preserve original periodFrom, periodTo, numDays, etc.
+        return consumptionRepository.save(existing);
+    }
+    
     
 
     // Get all consumption records
