@@ -1,7 +1,7 @@
 # IT342-G6-G4-ECB
 
 
-<h1>Electricity Consumption Billing</h1> 
+<h1>Electricity Consumption Billing System</h1> 
 
 
 
@@ -9,7 +9,8 @@
 
 The Electricity Consumption Billing System (ECB) is a comprehensive cross-platform solution designed for small to medium-sized utility companies. It automates electricity consumption tracking, billing calculations, and payments, ensuring a seamless experience for both administrators and customers.
 
-Features1. User Authentication (Web & Mobile)Secure login for customers and administrators.
+Features
+1. User Authentication (Web & Mobile)Secure login for customers and administrators.
 Third-party authentication support.
 Biometric login for mobile users.
 2. Administrator Authentication (Web)Secure admin login for centralized management.
@@ -54,8 +55,18 @@ Forecast comparison based on historical data.
 • MySQL Server<br>
 
 <h3>Backend Setup: </h3>
+• <b>git clone https://github.com/your-username/ecb-backend.git</b><br>
 • <b>cd backend </b><br>
 • <b>mvn spring-boot:run</b><br>
+
+<h3>Database Setup: </h3>
+• <b>CREATE DATABASE ecb_db;</b><br>
+• <b>spring.datasource.url=jdbc:mysql://localhost:3306/ecb_db</b><br>
+• <b>spring.datasource.username=root</b><br>
+• <b>spring.datasource.password=yourpassword</b><br>
+• <b>spring.jpa.hibernate.ddl-auto=update</b><br>
+• <b>spring.jpa.show-sql=true</b><br>
+• <b>server.port=8080</b><br>
 
 <h3>Frontend Setup (Web & Mobile):</h3>
 • <b>cd frontend</b><br>
