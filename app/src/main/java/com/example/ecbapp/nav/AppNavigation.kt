@@ -28,6 +28,12 @@ fun AppNavigation() {
         composable("resetNewPassword") {
             ResetNewPasswordScreen(navController)
         }
+        composable("resetPasswordOauth") {
+            ResetPasswordOauthScreen(navController)
+        }
+        composable("verification") {
+            VerificationScreen(navController)
+        }
         composable("dashboard") {
             DashboardScreen(
                 navController = navController,
