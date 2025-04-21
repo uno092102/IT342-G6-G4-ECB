@@ -7,12 +7,10 @@ import edu.cit.ecb.Service.UserService;
 import edu.cit.ecb.Utility.PreAuthorize;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/bills")
@@ -63,32 +61,22 @@ public class BillController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getBillById(@PathVariable int id) {
         try {
-            BillEntity bill = billService.findBillById(id); // throws if not found
+            BillEntity bill = billService.findBillById(id);
             return ResponseEntity.ok(bill);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bill not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body("Bill not found with ID: " + id);
         }
     }
 
     // Update a Bill with Recalculation
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateBillStatus(@PathVariable int id, @RequestBody Map<String, String> payload) {
+    @PreAuthorize("hasAuthority('SCOPE_write')")
+    public ResponseEntity<?> updateBill(@PathVariable int id, @RequestBody BillEntity updatedBill) {
         try {
-            BillEntity bill = billService.findBillById(id);
-            if (bill == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bill not found.");
-            }
-
-            String newStatus = payload.get("status");
-            if (newStatus != null && !newStatus.isBlank()) {
-                bill.setStatus(newStatus);
-            }
-
-            billService.save(bill);
-            return ResponseEntity.ok("Bill updated successfully.");
+            BillEntity bill = billService.updateBill(id, updatedBill);
+            return ResponseEntity.ok(bill);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating bill: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error updating bill: " + e.getMessage());
         }
     }
 

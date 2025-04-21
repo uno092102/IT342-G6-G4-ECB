@@ -1,5 +1,6 @@
 package edu.cit.ecb.Controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,6 @@ import edu.cit.ecb.Repository.UserRepository;
 import edu.cit.ecb.Service.CustomerAuthentication;
 import edu.cit.ecb.Service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @RestController
@@ -99,14 +99,23 @@ public class CustomerController {
 
     // Customer Login
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDTO loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginRequest) {
         boolean isAuthenticated = aserv.loginCustomer(loginRequest);
         if (isAuthenticated) {
-            return ResponseEntity.ok("Login Successful!");
+            UserEntity user = aserv.findByUsernameOrEmail(loginRequest.getUsername());
+
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("accountId", user.getAccountId());
+            userData.put("username", user.getUsername());
+            userData.put("email", user.getEmail());
+            userData.put("role", user.getRole().toString());
+
+            return ResponseEntity.ok(userData); // ✅ Proper JSON response
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Username or Password.");
         }
     }
+
 
     @PostMapping("/profile/uploadimage")
     @PreAuthorize("hasAuthority('CUSTOMER')")

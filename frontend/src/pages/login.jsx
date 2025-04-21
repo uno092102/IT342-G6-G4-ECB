@@ -17,7 +17,16 @@ const Login = () => {
       });
 
       if (response.ok) {
-        navigate("/dashboard");
+        const userData = await response.json();
+        localStorage.setItem("user", JSON.stringify(userData));
+        
+        // Redirect based on user role
+        if(userData.role === "ADMIN"){
+          navigate("/admin/dashboard");
+        } else if (userData.role === "CUSTOMER"){
+          navigate("/dashboard");
+        }
+  
       } else {
         const msg = await response.text();
         setError(msg);
