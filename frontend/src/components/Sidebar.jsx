@@ -9,6 +9,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     localStorage.clear();
+    document.cookie = "JSESSIONID=; Max-Age=0; path=/;";
     navigate('/login');
   };
 
@@ -25,15 +26,14 @@ const Sidebar = () => {
   const navLinksAdmin = [
     { to: "/admin/dashboard", label: "Dashboard" },
     { to: "/manage-users", label: "Manage Users" },
+    { to: "/generate-bill", label: "Generate Bill" },
     { to: "/bills", label: "Manage Bills" },
     { to: "/payments", label: "Manage Payments" },
+    { to: "/consumption", label: "Consumption Records" },
     { to: "/tariffs", label: "Tariff Rates" },
     { to: "/charges", label: "Fixed Charges" },
-    { to: "/generate-bill", label: "Generate Bill" },
-    { to: "/reports", label: "Reports" },
     { to: "/feedbacks", label: "Feedback" },
     { to: "/notifications", label: "Notifications" },
-    { to: "/profile", label: "Profile" }
   ]  
 
   const linkClass = "block px-4 py-2 rounded hover:bg-indigo-100";

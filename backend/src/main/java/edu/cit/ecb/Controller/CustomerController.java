@@ -23,6 +23,7 @@ import edu.cit.ecb.Service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/customer")
 public class CustomerController {
@@ -53,15 +54,24 @@ public class CustomerController {
     // View Customer Profile (Only accessible by the authenticated customer)
     @GetMapping("/profile")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<UserEntity> getCustomerProfile(@AuthenticationPrincipal UserEntity customerEntity) {
-        String email = customerEntity.getEmail();
-        UserEntity customer = cserv.findByEmail(email);
+    public ResponseEntity<UserEntity> getCustomerProfile(Authentication authentication) {
+        if (authentication == null) {
+            System.out.println("⚠️ Authentication object is null");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        System.out.println("✅ Logged in as: " + authentication.getName());
+        System.out.println("✅ Authorities: " + authentication.getAuthorities());
+
+        UserEntity customer = cserv.findByUsername(authentication.getName());
         if (customer != null) {
             return ResponseEntity.ok(customer);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+
 
     // Get Profile Image
     @GetMapping("/profile/image/{accountId}")

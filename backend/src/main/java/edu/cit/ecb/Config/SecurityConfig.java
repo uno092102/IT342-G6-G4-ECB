@@ -34,18 +34,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            .cors()
+            .and()
+            .csrf().disable()
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login/**", "/oauth2/**", "/customer/signup", "/customer/login").permitAll()
                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/customer/**").hasAuthority("CUSTOMER")
                 .anyRequest().authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2
+            .oauth2Login(oauth -> oauth
                 .successHandler(oAuth2SuccessHandler)
                 .failureUrl("/login?error=true")
             )
-            .httpBasic(); // Optional: Only if you use basic auth
+            .httpBasic(); // required if you test with Postman too
 
         return http.build();
     }

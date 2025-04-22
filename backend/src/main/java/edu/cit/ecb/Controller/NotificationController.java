@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.cit.ecb.Entity.NotificationEntity;
 import edu.cit.ecb.Service.NotificationService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.cit.ecb.Entity.FeedbackEntity;
 import edu.cit.ecb.Service.FeedbackService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/feedback")
 public class FeedbackController {

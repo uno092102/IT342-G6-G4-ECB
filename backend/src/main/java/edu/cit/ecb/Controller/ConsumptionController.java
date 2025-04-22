@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.cit.ecb.Entity.ConsumptionEntity;
 import edu.cit.ecb.Service.ConsumptionService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/consumption")
 public class ConsumptionController {

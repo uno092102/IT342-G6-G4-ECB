@@ -20,6 +20,7 @@ import edu.cit.ecb.Service.BillService;
 import edu.cit.ecb.Service.PaymentService;
 import edu.cit.ecb.Service.UserService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {

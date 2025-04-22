@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.cit.ecb.Entity.ChargeEntity;
 import edu.cit.ecb.Service.ChargeService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/charges")
 public class ChargeController {
