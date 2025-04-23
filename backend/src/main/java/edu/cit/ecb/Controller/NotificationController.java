@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.cit.ecb.Entity.NotificationEntity;
 import edu.cit.ecb.Service.NotificationService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {
@@ -21,9 +22,19 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getAllNotificationsByCustomer(accountId));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<NotificationEntity>> getAllNotifications() {
+        return ResponseEntity.ok(notificationService.getAllNotifications());
+    }
+
     @GetMapping("/unread/{accountId}")
     public ResponseEntity<List<NotificationEntity>> getUnreadNotifications(@PathVariable int accountId) {
         return ResponseEntity.ok(notificationService.getUnreadNotificationsByCustomer(accountId));
+    }
+
+    @GetMapping("/read/{accountId}")
+    public ResponseEntity<List<NotificationEntity>> getReadNotifications(@PathVariable int accountId) {
+        return ResponseEntity.ok(notificationService.getReadNotificationsByCustomer(accountId));
     }
 
     @PostMapping("/create")

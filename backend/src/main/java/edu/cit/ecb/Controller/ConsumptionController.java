@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import edu.cit.ecb.Entity.ConsumptionEntity;
 import edu.cit.ecb.Service.ConsumptionService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/consumption")
 public class ConsumptionController {
@@ -48,32 +50,24 @@ public class ConsumptionController {
 
 
     // Update an existing consumption record
-    @PutMapping("/update/{id}") 
-    public ResponseEntity<ConsumptionEntity> updateConsumption(@PathVariable int id, @RequestBody ConsumptionEntity updatedConsumption) {
-        Optional<ConsumptionEntity> existingConsumption = consumptionService.getConsumptionById(id);
-
-        if (existingConsumption.isPresent()) {
-            ConsumptionEntity consumption = existingConsumption.get();
-            consumption.setPeriodFrom(updatedConsumption.getPeriodFrom());
-            consumption.setPeriodTo(updatedConsumption.getPeriodTo());
-            consumption.setNumDays(updatedConsumption.getNumDays());
-            consumption.setAvgKwhPerDay(updatedConsumption.getAvgKwhPerDay());
-            consumption.setTotalKwh(updatedConsumption.getTotalKwh());
-
-            ConsumptionEntity savedConsumption = consumptionService.saveConsumption(consumption); // Save updated entity
-            return ResponseEntity.ok(savedConsumption);
-        } else {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateConsumption(@PathVariable int id, @RequestBody ConsumptionEntity input) {
+        try {
+            ConsumptionEntity updated = consumptionService.updateConsumption(id, input);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
+
     // Delete a consumption record
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteConsumption(@PathVariable int id) {
+    public ResponseEntity<?> deleteConsumption(@PathVariable int id) {
         Optional<ConsumptionEntity> existingConsumption = consumptionService.getConsumptionById(id);
         if (existingConsumption.isPresent()) {
             consumptionService.deleteConsumption(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Consumption Deleted successfully.");
         } else {
             return ResponseEntity.notFound().build();
         }

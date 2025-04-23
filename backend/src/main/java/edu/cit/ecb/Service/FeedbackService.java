@@ -24,6 +24,10 @@ public class FeedbackService {
         return frepo.findByCustomer_AccountId(accountId);
     }
 
+    public List<FeedbackEntity> getAllFeedback() {
+        return frepo.findAll();
+    }
+
     public FeedbackEntity submitFeedback(int accountId, String message) {
         UserEntity customer = crepo.findByAccountId(accountId);
         if (customer == null) {
