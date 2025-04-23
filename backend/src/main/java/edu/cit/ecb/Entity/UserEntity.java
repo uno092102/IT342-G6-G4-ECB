@@ -2,7 +2,7 @@ package edu.cit.ecb.Entity;
 
 import java.util.List;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
@@ -40,7 +40,7 @@ public class UserEntity {
     private byte[] customerImage;
     
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "user-bill")
+    @JsonBackReference(value = "user-bill") 
     private List<BillEntity> bills;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -50,6 +50,15 @@ public class UserEntity {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ConsumptionEntity> consumptions;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<NotificationEntity> notifications;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<FeedbackEntity> feedbacks;
+
 
     public UserEntity() {
         super();

@@ -36,18 +36,18 @@ public class SecurityConfig {
         http
             .cors()
             .and()
-            .csrf().disable()
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login/**", "/oauth2/**", "/customer/signup", "/customer/login").permitAll()
                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/customer/**").hasAuthority("CUSTOMER")
                 .anyRequest().authenticated()
             )
-            // .oauth2Login(oauth -> oauth
+            // .oauth2Login(oauth2 -> oauth2
             //     .successHandler(oAuth2SuccessHandler)
             //     .failureUrl("/login?error=true")
             // )
-            .httpBasic(); 
+            .httpBasic(); // Optional: Only if you use basic auth
 
         return http.build();
     }

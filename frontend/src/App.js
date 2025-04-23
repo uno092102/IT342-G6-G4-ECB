@@ -19,6 +19,7 @@ import AdminFeedbacks from "./pages/AdminFeedbacks";
 import AddConsumption from "./pages/AdminGenerateBill";
 import AdminTariffs from "./pages/AdminTariffs";
 import CustomerProfile from "./pages/CustomerProfile"; 
+import AdminReports from "./pages/AdminReports";
 
 function App() {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -173,6 +174,20 @@ function App() {
             )
           }
         />
+
+      <Route
+        path="/reports"
+        element={
+          user && user.role === "ADMIN" ? (
+            <Layout pageTitle="Activity Reports" breadcrumbs="Admin / Reports">
+              <AdminReports />
+            </Layout>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+
 
       </Routes>
     </Router>
