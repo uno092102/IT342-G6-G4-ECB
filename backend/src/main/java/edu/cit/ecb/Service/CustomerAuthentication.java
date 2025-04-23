@@ -56,4 +56,12 @@ public class CustomerAuthentication {
     
         return false;
     }    
+
+    public UserEntity findByUsernameOrEmail(String input) {
+        UserEntity user = crepo.findByUsername(input);
+        if (user == null) {
+            user = crepo.findByEmail(input);
+        }
+        return user;
+    }    
 }

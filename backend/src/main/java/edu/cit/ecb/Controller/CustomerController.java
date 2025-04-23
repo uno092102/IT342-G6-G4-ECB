@@ -1,12 +1,15 @@
 package edu.cit.ecb.Controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,11 +17,13 @@ import edu.cit.ecb.DTO.LoginDTO;
 import edu.cit.ecb.DTO.SignupDTO;
 import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Enum.Role;
+import edu.cit.ecb.Repository.UserRepository;
 import edu.cit.ecb.Service.CustomerAuthentication;
 import edu.cit.ecb.Service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/customer")
 public class CustomerController {
@@ -29,13 +34,17 @@ public class CustomerController {
     @Autowired
     CustomerAuthentication aserv;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     // GET Home
     @GetMapping("/")
-    public String index() {
-        return "Welcome to the Electricity Consumption Billing System";
+    public ResponseEntity<String> index() {
+        return ResponseEntity.ok("✅ Electricity Consumption Billing Backend is running!");
     }
+    
 
     @GetMapping("/print")
     public String print() {
@@ -45,15 +54,24 @@ public class CustomerController {
     // View Customer Profile (Only accessible by the authenticated customer)
     @GetMapping("/profile")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<UserEntity> getCustomerProfile(@AuthenticationPrincipal UserEntity customerEntity) {
-        String email = customerEntity.getEmail();
-        UserEntity customer = cserv.findByEmail(email);
+    public ResponseEntity<UserEntity> getCustomerProfile(Authentication authentication) {
+        if (authentication == null) {
+            System.out.println("⚠️ Authentication object is null");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        System.out.println("✅ Logged in as: " + authentication.getName());
+        System.out.println("✅ Authorities: " + authentication.getAuthorities());
+
+        UserEntity customer = cserv.findByUsername(authentication.getName());
         if (customer != null) {
             return ResponseEntity.ok(customer);
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+
 
     // Get Profile Image
     @GetMapping("/profile/image/{accountId}")
@@ -91,14 +109,23 @@ public class CustomerController {
 
     // Customer Login
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDTO loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginRequest) {
         boolean isAuthenticated = aserv.loginCustomer(loginRequest);
         if (isAuthenticated) {
-            return ResponseEntity.ok("Login Successful!");
+            UserEntity user = aserv.findByUsernameOrEmail(loginRequest.getUsername());
+
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("accountId", user.getAccountId());
+            userData.put("username", user.getUsername());
+            userData.put("email", user.getEmail());
+            userData.put("role", user.getRole().toString());
+
+            return ResponseEntity.ok(userData); // ✅ Proper JSON response
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Username or Password.");
         }
     }
+
 
     @PostMapping("/profile/uploadimage")
     @PreAuthorize("hasAuthority('CUSTOMER')")
@@ -119,10 +146,31 @@ public class CustomerController {
     // Edit Customer Profile (Only customers can edit their own profiles)
     @PutMapping("/profile/edit/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<UserEntity> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
-        UserEntity updatedCustomer = cserv.updateProfile(id, updatedProfile);
-        return ResponseEntity.ok(updatedCustomer);
+    public ResponseEntity<?> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+
+        UserEntity loggedInUser = userRepository.findByUsername(currentUsername);
+
+        if (loggedInUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
+        }
+
+        if (loggedInUser.getAccountId() != id) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only update your own profile.");
+        }
+
+        try {
+            UserEntity updated = cserv.updateProfile(id, updatedProfile);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update profile.");
+        }
     }
+
+
+
 
     @GetMapping("/userinfo")
     public Map<String, Object> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {

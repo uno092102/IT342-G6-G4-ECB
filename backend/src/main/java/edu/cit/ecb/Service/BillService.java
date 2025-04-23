@@ -108,4 +108,8 @@ public class BillService {
         double total = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
         bill.setTotalAmount((float) total);
     }
+
+    public BillEntity save(BillEntity bill) {
+        return brepo.save(bill);
+    }
 }

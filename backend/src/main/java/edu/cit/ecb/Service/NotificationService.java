@@ -24,8 +24,16 @@ public class NotificationService {
         return nrepo.findByCustomer_AccountId(accountId);
     }
 
+    public List<NotificationEntity> getAllNotifications() {
+        return nrepo.findAll();
+    }
+
     public List<NotificationEntity> getUnreadNotificationsByCustomer(int accountId) {
         return nrepo.findByIsReadFalseAndCustomer_AccountId(accountId);
+    }
+
+    public List<NotificationEntity> getReadNotificationsByCustomer(int accountId) {
+        return nrepo.findByIsReadTrueAndCustomer_AccountId(accountId);
     }
 
     public NotificationEntity createNotification(int accountId, String message) {

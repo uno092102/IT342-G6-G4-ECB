@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.cit.ecb.Entity.FeedbackEntity;
 import edu.cit.ecb.Service.FeedbackService;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/feedback")
 public class FeedbackController {
@@ -24,6 +25,12 @@ public class FeedbackController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<FeedbackEntity>> getAllFeedback() {
+        List<FeedbackEntity> feedbackList = feedbackService.getAllFeedback();
+        return ResponseEntity.ok(feedbackList);
     }
 
     @PostMapping("/submit")

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/bills")
 public class BillController {
@@ -67,6 +68,21 @@ public class BillController {
             return ResponseEntity.status(404).body("Bill not found with ID: " + id);
         }
     }
+
+    // ✅ GET bills by customer ID
+// ✅ GET bills by customer ID
+    @GetMapping("/customer/{id}")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
+    public ResponseEntity<?> getBillsByCustomerId(@PathVariable int id) {
+        try {
+            List<BillEntity> bills = billService.getBillsByCustomerId(id);
+            return ResponseEntity.ok(bills);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching bills: " + e.getMessage());
+        }
+    }
+
+
 
     // Update a Bill with Recalculation
     @PutMapping("/update/{id}")
