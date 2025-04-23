@@ -43,11 +43,11 @@ public class SecurityConfig {
                 .requestMatchers("/customer/**").hasAuthority("CUSTOMER")
                 .anyRequest().authenticated()
             )
-            .oauth2Login(oauth -> oauth
-                .successHandler(oAuth2SuccessHandler)
-                .failureUrl("/login?error=true")
-            )
-            .httpBasic(); // required if you test with Postman too
+            // .oauth2Login(oauth -> oauth
+            //     .successHandler(oAuth2SuccessHandler)
+            //     .failureUrl("/login?error=true")
+            // )
+            .httpBasic(); 
 
         return http.build();
     }
