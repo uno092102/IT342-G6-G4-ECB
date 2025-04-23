@@ -1,5 +1,6 @@
 package com.example.ecbapp.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -19,6 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.ecbapp.R
+import com.example.ecbapp.api.RetrofitClient
+import com.example.ecbapp.model.RegisterRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -27,6 +35,9 @@ fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var contactNo by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -34,7 +45,6 @@ fun RegisterScreen(navController: NavController) {
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Gradient Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -66,21 +76,8 @@ fun RegisterScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Text(
-            text = "Register",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF1D1D1D)
-        )
-        Text(
-            text = "Enter your information to register!",
-            fontSize = 14.sp,
-            color = Color.Gray,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 20.dp)
-        )
+        Text("Register", fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), color = Color(0xFF1D1D1D))
+        Text("Enter your information to register!", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp))
 
         OutlinedTextField(
             value = firstName,
@@ -138,19 +135,67 @@ fun RegisterScreen(navController: NavController) {
             shape = RoundedCornerShape(14.dp),
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = address,
+            onValueChange = { address = it },
+            label = { Text("Address*") },
+            singleLine = true,
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = contactNo,
+            onValueChange = { contactNo = it },
+            label = { Text("Contact No.*") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(28.dp))
 
         Button(
             onClick = {
-                // TODO: Perform registration and navigate
-                navController.navigate("login")
+                if (password != confirmPassword) {
+                    Toast.makeText(context, "Passwords do not match!", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+
+                val request = RegisterRequest(
+                    firstName = firstName,
+                    lastName = lastName,
+                    email = email,
+                    password = password,
+                    address = address,
+                    contactNo = contactNo
+                )
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val response = RetrofitClient.api.register(request)
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful && response.body()?.success == true) {
+                                Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
+                                navController.navigate("login")
+                            } else {
+                                Toast.makeText(context, "Failed: ${response.body()?.message ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             },
             shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F86F2)),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
+            modifier = Modifier.fillMaxWidth().height(52.dp)
         ) {
             Text(text = "Register", fontSize = 16.sp, color = Color.White)
         }
