@@ -1,24 +1,24 @@
 services:
   - type: web
-    name: electricity-consumption-billing
+    name: ecb-backend
     env: java
     plan: free
-    buildCommand: chmod +x mvnw && ./mvnw package
+    buildCommand: mvn package
     startCommand: java -jar target/ecb-0.0.1-SNAPSHOT.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:mysql://your-mysql-host:3306/ecb_db
+        value: jdbc:mysql://b6epaavgrnxwnyfn6jhf-mysql.services.clever-cloud.com:3306/b6epaavgrnxwnyfn6jhf
       - key: SPRING_DATASOURCE_USERNAME
-        value: your-mysql-username
+        value: ucphzmxvtlxrffxl
       - key: SPRING_DATASOURCE_PASSWORD
-        value: your-mysql-password
-      - key: GOOGLE_CLIENT_ID
-        value: your-google-client-id
-      - key: GOOGLE_CLIENT_SECRET
-        value: your-google-client-secret
-      - key: GOOGLE_REDIRECT_URI
-        value: https://your-app-name.onrender.com/login/oauth2/code/google
+        value: TdscmvytU2xc8TXixT4s
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
       - key: SPRING_JPA_SHOW_SQL
         value: true
+      - key: GOOGLE_CLIENT_ID
+        value: 538456243551-fnt03d2fmirm005mp86iivecoeqp40ha.apps.googleusercontent.com
+      - key: GOOGLE_CLIENT_SECRET
+        value: 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
+      - key: GOOGLE_REDIRECT_URI
+        value: https://IT342-G6-G4-ECB/login/oauth2/code/google
