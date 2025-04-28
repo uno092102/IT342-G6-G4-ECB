@@ -6,9 +6,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import edu.cit.ecb.Entity.UserEntity;
+import edu.cit.ecb.Service.BillService;
+import edu.cit.ecb.Service.ConsumptionService;
+import edu.cit.ecb.Service.PaymentService;
 import edu.cit.ecb.Service.UserService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -17,6 +22,15 @@ public class AdminController {
 
     @Autowired
     private UserService customerService;
+
+    @Autowired
+    private BillService billService;
+
+    @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
+    private ConsumptionService consumptionService;
 
     // Secure Dashboard
     @GetMapping("/dashboard")
@@ -64,5 +78,15 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.status(404).body("Error deleting customer: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/reports")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getAllActivityLogs() {
+        Map<String, Object> activity = new HashMap<>();
+        activity.put("bills", billService.getAllBill());
+        activity.put("payments", paymentService.findAllPaymentRecords());
+        activity.put("consumptions", consumptionService.getAllConsumption());
+        return ResponseEntity.ok(activity);
     }
 }

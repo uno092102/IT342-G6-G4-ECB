@@ -1,7 +1,10 @@
 package edu.cit.ecb.Entity;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
@@ -19,15 +22,18 @@ public class BillEntity {
     private float totalAmount;
     private Date dueDate;
     private String status; // Added Status Field
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Timestamp createdAt;
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
-    @JsonIgnore // Changed from @JsonManagedReference
+    @JsonManagedReference(value = "user-bill")
     private UserEntity customer;
 
     @ManyToOne
     @JoinColumn(name = "consumptionId", nullable = false)
-    @JsonIgnore
+    @JsonManagedReference
     private ConsumptionEntity consumption; // Added Relationship
 
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -114,5 +120,9 @@ public class BillEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 }
