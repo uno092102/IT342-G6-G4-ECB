@@ -12,6 +12,9 @@ const AdminBills = () => {
   const [tariffs, setTariffs] = useState([]);
   const [charges, setCharges] = useState([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -61,9 +64,23 @@ const AdminBills = () => {
     setBills(bills.filter(b => b.billId !== id));
   };
 
+  const totalRecords = bills.length;
+  const startRecord = (currentPage - 1) * pageSize + 1;
+  const endRecord = Math.min(currentPage * pageSize, totalRecords);
+  const currentRecords = bills.slice(startRecord - 1, endRecord);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (endRecord < totalRecords) setCurrentPage(currentPage + 1);
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold mb-4">All Customer Bills</h2>
+      
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="text-gray-600 bg-gray-100">
@@ -78,7 +95,7 @@ const AdminBills = () => {
             </tr>
           </thead>
           <tbody>
-            {bills.map((bill) => (
+            {currentRecords.map((bill) => (
               <tr
                 key={bill.billId}
                 className="border-b hover:bg-gray-50"
@@ -89,9 +106,7 @@ const AdminBills = () => {
                 <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>{bill.dueDate}</td>
                 <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>₱{bill.totalAmount.toFixed(2)}</td>
                 <td
-                  className={`py-2 px-4 font-medium cursor-pointer ${
-                    bill.status === "PAID" ? "text-green-600" : "text-red-500"
-                  }`}
+                  className={`py-2 px-4 font-medium cursor-pointer ${bill.status === "PAID" ? "text-green-600" : "text-red-500"}`}
                   onClick={() => handleRowClick(bill)}
                 >
                   {bill.status}
@@ -121,6 +136,28 @@ const AdminBills = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex justify-between items-center mt-4">
+        <div className="text-sm text-gray-600 mb-2">
+          Showing {startRecord}-{endRecord} of {totalRecords} records
+        </div>
+        <div className="space-x-2">
+        <button
+          onClick={handlePrevPage}
+          disabled={currentPage === 1}
+          className="px-3 py-1 bg-gray-200 text-sm rounded hover:bg-gray-300 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <button
+          onClick={handleNextPage}
+          disabled={endRecord >= totalRecords}
+          className="px-3 py-1 bg-gray-200 text-sm rounded hover:bg-gray-300 disabled:opacity-50"
+        >
+          Next
+        </button>
+        </div>
       </div>
 
       {selectedBill && (

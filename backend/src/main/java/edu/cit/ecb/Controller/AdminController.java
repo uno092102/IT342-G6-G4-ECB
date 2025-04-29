@@ -1,11 +1,14 @@
 package edu.cit.ecb.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import edu.cit.ecb.DTO.UserUpdateDTO;
 import edu.cit.ecb.Entity.UserEntity;
+import edu.cit.ecb.Repository.UserRepository;
 import edu.cit.ecb.Service.BillService;
 import edu.cit.ecb.Service.ConsumptionService;
 import edu.cit.ecb.Service.PaymentService;
@@ -31,6 +34,9 @@ public class AdminController {
 
     @Autowired
     private ConsumptionService consumptionService;
+
+    @Autowired
+    private UserService userService;
 
     // Secure Dashboard
     @GetMapping("/dashboard")
@@ -89,4 +95,31 @@ public class AdminController {
         activity.put("consumptions", consumptionService.getAllConsumption());
         return ResponseEntity.ok(activity);
     }
+
+    // AdminController.java
+
+    @PutMapping("/updateUser/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable int id, @RequestBody UserUpdateDTO updatedUser) {
+        try {
+            UserEntity user = userService.findByAccountId(id);
+            if (user == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            user.setFname(updatedUser.getFname());
+            user.setLname(updatedUser.getLname());
+            user.setUsername(updatedUser.getUsername());
+            user.setEmail(updatedUser.getEmail());
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+            user.setAddress(updatedUser.getAddress());
+            user.setRole(updatedUser.getRole());
+
+            userService.save(user);
+
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error updating user: " + e.getMessage());
+        }
+    }
+
 }
