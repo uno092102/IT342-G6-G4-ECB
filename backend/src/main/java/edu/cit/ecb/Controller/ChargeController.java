@@ -1,10 +1,9 @@
 package edu.cit.ecb.Controller;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,35 +18,48 @@ public class ChargeController {
     @Autowired
     private ChargeService chargeService;
 
-    @PostMapping("/add")
-    public ResponseEntity<ChargeEntity> addCharge(@RequestBody ChargeEntity charge) {
-        return ResponseEntity.ok(chargeService.addCharge(charge));
+    // POST - Create a new charge
+    @PostMapping("/createCharge")
+    public ResponseEntity<?> createCharge(@RequestBody ChargeEntity charge) {
+        try {
+            ChargeEntity createdCharge = chargeService.addCharge(charge);
+            return ResponseEntity.ok(createdCharge);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error creating charge: " + e.getMessage());
+        }
     }
 
+    // GET - Retrieve all charges
     @GetMapping("/getAll")
     public ResponseEntity<List<ChargeEntity>> getAllCharges() {
         return ResponseEntity.ok(chargeService.getAllCharge());
     }
 
+    // PUT - Update an existing charge
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateCharge(@PathVariable int id, @RequestBody ChargeEntity updatedCharge) {
-        Optional<ChargeEntity> existingOpt = chargeService.findById(id); // Ensure this method exists
+        try {
+            ChargeEntity existing = chargeService.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Charge not found with ID: " + id));
 
-        if (existingOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Charge not found.");
+            existing.setChargeType(updatedCharge.getChargeType());
+            existing.setRatePerKwh(updatedCharge.getRatePerKwh());
+
+            chargeService.save(existing);
+            return ResponseEntity.ok(existing);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        ChargeEntity existing = existingOpt.get();
-        existing.setChargeType(updatedCharge.getChargeType());
-        existing.setRatePerKwh(updatedCharge.getRatePerKwh());
-
-        chargeService.save(existing);
-        return ResponseEntity.ok("Charge updated successfully.");
     }
 
-    @DeleteMapping("/delete/{chargeId}")
-    public ResponseEntity<String> deleteCharge(@PathVariable int chargeId) {
-        chargeService.deleteCharge(chargeId);
-        return ResponseEntity.ok("Charge deleted successfully.");
+    // DELETE - Remove a charge
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteCharge(@PathVariable int id) {
+        try {
+            chargeService.deleteCharge(id);
+            return ResponseEntity.ok("Charge deleted successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting charge: " + e.getMessage());
+        }
     }
 }

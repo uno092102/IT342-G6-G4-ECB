@@ -1,21 +1,40 @@
-// pages/AdminConsumption.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api/apiConfig";
 
 const AdminConsumption = () => {
   const [records, setRecords] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
 
   useEffect(() => {
     const fetchConsumption = async () => {
       try {
         const res = await api.get("/api/consumption/all");
-        setRecords(res.data);
+        const sorted = res.data.sort((a, b) => b.consumptionId - a.consumptionId);
+        setRecords(sorted);
       } catch (err) {
         console.error("Error fetching all consumption:", err);
       }
     };
     fetchConsumption();
   }, []);
+
+  const totalRecords = records.length;
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = records.slice(indexOfFirstRecord, indexOfLastRecord);
+
+  const handleNextPage = () => {
+    if (currentPage < Math.ceil(totalRecords / recordsPerPage)) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
@@ -34,12 +53,10 @@ const AdminConsumption = () => {
             </tr>
           </thead>
           <tbody>
-            {records.map((record) => (
+            {currentRecords.map((record) => (
               <tr key={record.consumptionId} className="border-b hover:bg-gray-50">
                 <td className="py-2 px-4">{record.consumptionId}</td>
-                <td className="py-2 px-4">
-                  {record.customer?.fname} {record.customer?.lname}
-                </td>
+                <td className="py-2 px-4">{record.customerFullName}</td>
                 <td className="py-2 px-4">{record.periodFrom}</td>
                 <td className="py-2 px-4">{record.periodTo}</td>
                 <td className="py-2 px-4">{record.numDays}</td>
@@ -56,6 +73,29 @@ const AdminConsumption = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <p className="text-sm text-gray-600">
+          Showing {Math.min(indexOfFirstRecord + 1, totalRecords)}–{Math.min(indexOfLastRecord, totalRecords)} of {totalRecords} records
+        </p>
+        <div className="space-x-2">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === Math.ceil(totalRecords / recordsPerPage)}
+            className="px-4 py-2 border rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -19,7 +19,6 @@ const Sidebar = () => {
     { to: "/consumption", label: "Consumption" },
     { to: "/payments", label: "Payments" },
     { to: "/feedback", label: "Feedback" },
-    { to: "/notifications", label: "Notifications" },
     { to: "/profile", label: "Profile" },
   ];
 
@@ -33,7 +32,7 @@ const Sidebar = () => {
     { to: "/tariffs", label: "Tariff Rates" },
     { to: "/charges", label: "Fixed Charges" },
     { to: "/feedbacks", label: "Feedback" },
-    { to: "/notifications", label: "Notifications" },
+    { to: "/reports", label: "Reports" },
   ]  
 
   const linkClass = "block px-4 py-2 rounded hover:bg-indigo-100";

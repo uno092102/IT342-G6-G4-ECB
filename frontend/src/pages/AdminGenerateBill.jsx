@@ -82,7 +82,7 @@ const AddConsumption = () => {
 
   return (
     <div className="bg-white shadow rounded-lg p-6 space-y-6">
-      <h2 className="text-xl font-bold">Add Consumption (Auto-Generates Bill)</h2>
+      <h2 className="text-xl font-bold">Generate Customer Bill</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -136,22 +136,11 @@ const AddConsumption = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1"># of Days (auto)</label>
+          <label className="block text-sm font-medium mb-1">Number of Days</label>
           <input
             type="number"
             name="numDays"
             value={form.numDays}
-            readOnly
-            className="w-full border px-3 py-2 rounded bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Avg kWh/Day (auto)</label>
-          <input
-            type="number"
-            name="avgKwhPerDay"
-            value={form.avgKwhPerDay}
             readOnly
             className="w-full border px-3 py-2 rounded bg-gray-100"
           />

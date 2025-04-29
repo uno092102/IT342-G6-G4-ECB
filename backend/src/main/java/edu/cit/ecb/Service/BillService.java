@@ -44,22 +44,30 @@ public class BillService {
     
         ConsumptionEntity consumption = crepo.findById(bill.getConsumption().getConsumptionId())
             .orElseThrow(() -> new IllegalArgumentException("Consumption not found."));
+        bill.setConsumption(consumption);
     
+        // ✅ Set billDate to the periodTo of the consumption
+        Date periodTo = consumption.getPeriodTo();
+        bill.setBillDate(periodTo);
+    
+        // ✅ Set dueDate to 30 days after periodTo
+        long thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000;
+        bill.setDueDate(new Date(periodTo.getTime() + thirtyDaysInMillis));
+    
+        // ✅ Calculate amount using charges + tariffs
         List<ChargeEntity> charges = chargeRepo.findAll();
         List<TariffEntity> tariffs = trepo.findAll();
-    
         double finalBillAmount = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
-    
-        bill.setBillDate(Date.valueOf(LocalDate.now()));
-        bill.setDueDate(Date.valueOf(LocalDate.now().plusDays(30)));
         bill.setTotalAmount((float) finalBillAmount);
-        bill.setStatus("Unpaid");
     
+        bill.setStatus("Unpaid");
         return brepo.save(bill);
     }
+    
 
     public List<BillEntity> getAllBill() {
-        return brepo.findAll();
+            return brepo.findAllByOrderByCreatedAtDesc();
+        
     }
 
     public List<BillEntity> getBillsByCustomerId(int customerId) {
