@@ -15,6 +15,8 @@ import edu.cit.ecb.Entity.BillEntity;
 public interface BillRepository extends JpaRepository<BillEntity, Integer> {
     public BillEntity findByBillId(Integer billId); // Updated method name to match the correct attribute
     List<BillEntity> findByCustomer_AccountId(int accountId);
+    List<BillEntity> findAllByOrderByCreatedAtDesc();
+
 
     @Transactional
     @Modifying

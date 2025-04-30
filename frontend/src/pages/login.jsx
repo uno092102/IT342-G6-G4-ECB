@@ -10,23 +10,29 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://localhost:8080/customer/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: usernameOrEmail, password }),
+      const params = new URLSearchParams();
+      params.append('username', usernameOrEmail);
+      params.append('password', password);
+  
+      const response = await fetch('http://localhost:8080/customer/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, // important json if you fix backend too
+        body: JSON.stringify({
+          username: usernameOrEmail,
+          password: password
+        }),
       });
-
+  
       if (response.ok) {
         const userData = await response.json();
         localStorage.setItem("user", JSON.stringify(userData));
-        
-        // Redirect based on user role
-        if(userData.role === "ADMIN"){
+        localStorage.setItem("token", userData.token); // Save the token separately!
+  
+        if (userData.role === "ADMIN") {
           navigate("/admin/dashboard");
-        } else if (userData.role === "CUSTOMER"){
+        } else if (userData.role === "CUSTOMER") {
           navigate("/dashboard");
         }
-  
       } else {
         const msg = await response.text();
         setError(msg);
@@ -35,6 +41,7 @@ const Login = () => {
       setError("Server not available.");
     }
   };
+  
 
   const handleSignup = () => {
     navigate("/register");

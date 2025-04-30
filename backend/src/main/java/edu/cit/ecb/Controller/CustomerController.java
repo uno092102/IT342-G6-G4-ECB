@@ -20,8 +20,11 @@ import edu.cit.ecb.Enum.Role;
 import edu.cit.ecb.Repository.UserRepository;
 import edu.cit.ecb.Service.CustomerAuthentication;
 import edu.cit.ecb.Service.UserService;
+import edu.cit.ecb.JWT.JwtUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+
+
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -36,6 +39,9 @@ public class CustomerController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -114,13 +120,17 @@ public class CustomerController {
         if (isAuthenticated) {
             UserEntity user = aserv.findByUsernameOrEmail(loginRequest.getUsername());
 
-            Map<String, Object> userData = new HashMap<>();
-            userData.put("accountId", user.getAccountId());
-            userData.put("username", user.getUsername());
-            userData.put("email", user.getEmail());
-            userData.put("role", user.getRole().toString());
+            // ✅ Generate JWT token
+            String jwtToken = jwtUtil.generateToken(user.getUsername());
 
-            return ResponseEntity.ok(userData); // ✅ Proper JSON response
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", jwtToken);
+            response.put("accountId", user.getAccountId());
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("role", user.getRole().toString());
+
+            return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Username or Password.");
         }

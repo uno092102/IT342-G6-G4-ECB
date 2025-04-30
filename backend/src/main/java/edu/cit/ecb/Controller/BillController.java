@@ -1,8 +1,10 @@
 package edu.cit.ecb.Controller;
 
 import edu.cit.ecb.Entity.BillEntity;
+import edu.cit.ecb.Entity.ConsumptionEntity;
 import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Service.BillService;
+import edu.cit.ecb.Service.ConsumptionService;
 import edu.cit.ecb.Service.UserService;
 import edu.cit.ecb.Utility.PreAuthorize;
 
@@ -23,33 +25,44 @@ public class BillController {
     @Autowired
     private UserService customerService;
 
-    // Generate a Bill with Automatic Calculation
+    @Autowired
+    private ConsumptionService consumptionService;
+
     @PostMapping("/generate/{customerId}/{consumptionId}")
     @PreAuthorize("hasAuthority('SCOPE_write')")
     public ResponseEntity<?> generateBill(@PathVariable int customerId, @PathVariable int consumptionId) {
         try {
-            // Fetch customer using CustomerService
             UserEntity customer = customerService.findByAccountId(customerId);
             if (customer == null) {
                 return ResponseEntity.status(404).body("Customer not found with ID: " + customerId);
             }
 
+            ConsumptionEntity consumption = consumptionService.getConsumptionById(consumptionId).orElse(null);
+            if (consumption == null) {
+                return ResponseEntity.status(404).body("Consumption not found with ID: " + consumptionId);
+            }
+
             BillEntity bill = new BillEntity();
             bill.setCustomer(customer);
-            bill.setBillDate(new java.sql.Date(System.currentTimeMillis()));
+            bill.setConsumption(consumption);
 
-            // Set due date to 30 days from the current date
-            long thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000;
-            bill.setDueDate(new java.sql.Date(System.currentTimeMillis() + thirtyDaysInMillis));
+            // 🟢 Set billDate as the end of the period
+            java.sql.Date periodTo = consumption.getPeriodTo();
+            bill.setBillDate(periodTo);
 
-            bill.setTotalAmount(0); // Placeholder before calculation
+            // 🟢 Set dueDate 30 days after the end of the period
+            long thirtyDays = 30L * 24 * 60 * 60 * 1000;
+            bill.setDueDate(new java.sql.Date(periodTo.getTime() + thirtyDays));
 
+            bill.setTotalAmount(0); // Placeholder
             billService.calculateTotalBill(bill);
+
             return ResponseEntity.ok(billService.postBill(bill));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error generating bill: " + e.getMessage());
         }
     }
+
 
     // Get all bills
     @GetMapping("/getAllBills")
