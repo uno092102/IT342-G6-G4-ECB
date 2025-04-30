@@ -20,17 +20,20 @@ const Register = () => {
     e.preventDefault();
     try {
       const response = await api.post("/customer/signup", formData);
-
-      if (response.ok) {
+  
+      // Axios treats HTTP 200-299 as success automatically
+      if (response.status === 200) {
         navigate("/login");
-      } else {
-        const msg = await response.text();
-        setError(msg);
       }
     } catch (err) {
-      setError("Server error.");
+      if (err.response && err.response.data) {
+        setError(err.response.data); // backend error message
+      } else {
+        setError("Server error.");
+      }
     }
   };
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
