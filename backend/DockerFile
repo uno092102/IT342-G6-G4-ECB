@@ -1,14 +1,14 @@
-# Use an official Maven image to build the application
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+# Use a lightweight JDK base image
+FROM eclipse-temurin:17-jdk
+
+# Set work directory
 WORKDIR /app
-COPY . .
-RUN mvn package -DskipTests
 
-# Use an official OpenJDK runtime to run the application
-FROM eclipse-temurin:17-jre
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+# Copy and build the Spring Boot app
+COPY . /app
 
-EXPOSE 8080
+# Build the project
+RUN ./mvnw clean install -DskipTests
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the app
+CMD ["java", "-jar", "target/ecb-0.0.1-SNAPSHOT.jar"]
