@@ -36,8 +36,10 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "customerImage", columnDefinition = "LONGBLOB")
+    @Lob
+    @Column(name = "customer_image")
     private byte[] customerImage;
+
     
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference(value = "user-bill") 
