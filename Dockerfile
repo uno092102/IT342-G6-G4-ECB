@@ -1,17 +1,17 @@
-# Use a lightweight JDK image
+# Use lightweight JDK
 FROM eclipse-temurin:17-jdk
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy the contents of /backend into the container's /app folder
+# Copy everything from backend folder
 COPY backend/ /app/
 
-# Grant execute permission to Maven wrapper (for Linux environments)
+# Make Maven wrapper executable
 RUN chmod +x mvnw
 
-# Build the Spring Boot app inside /app
+# Build the app
 RUN ./mvnw clean install -DskipTests
 
-# Run the built JAR (update filename if different)
-CMD ["java", "-jar", "target/ecb-0.0.1-SNAPSHOT.jar"]
+# Run the generated JAR (auto-detect jar name)
+CMD ["sh", "-c", "java -jar target/*.jar"]
