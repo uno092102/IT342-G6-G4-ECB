@@ -1,5 +1,6 @@
 import React, { useState} from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/apiConfig";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -18,11 +19,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8080/customer/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await api.post("/customer/signup", formData);
 
       if (response.ok) {
         navigate("/login");

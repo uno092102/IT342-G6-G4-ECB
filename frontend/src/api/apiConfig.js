@@ -4,7 +4,7 @@ import axios from 'axios';
 // Create Axios instance
 const api = axios.create({
   //baseURL: 'http://localhost:8080',
-  baseURL: 'https://ecb-backend.onrender.com',
+  baseURL: process.env.REACT_APP_API_BASE || 'http://localhost:8080',
   withCredentials: true, // In case you also want to send cookies
 });
 

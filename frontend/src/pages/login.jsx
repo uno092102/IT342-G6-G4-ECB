@@ -14,7 +14,7 @@ const Login = () => {
       params.append('username', usernameOrEmail);
       params.append('password', password);
   
-      const response = await fetch('http://localhost:8080/customer/login', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE}/customer/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }, // important json if you fix backend too
         body: JSON.stringify({
@@ -48,7 +48,7 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    window.location.href = "https://ecb-backend.onrender.com/oauth2/authorization/google";
   };
 
   return (
