@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/apiConfig";
+import EditTariffModal from "./EditTariffModal";
+import ConfirmDeleteTariffModal from "./ConfirmDeleteTariffModal";
 
 const AdminTariffs = () => {
   const [tariffs, setTariffs] = useState([]);
-  const [editIndex, setEditIndex] = useState(null);
-  const [editedTariffs, setEditedTariffs] = useState({});
+  const [editTariff, setEditTariff] = useState(null);
+  const [deleteTariffId, setDeleteTariffId] = useState(null);
   const [tariffType, setTariffType] = useState("");
-  const [ratePerKwh, setRatePerKwh] = useState("");
+  const [rate, setRate] = useState("");
 
   const fetchTariffs = async () => {
     try {
@@ -22,62 +24,31 @@ const AdminTariffs = () => {
   }, []);
 
   const handleAddTariff = async () => {
-    if (!tariffType || ratePerKwh === "") return;
+    if (!tariffType || rate === "") return;
     try {
-      const parsedRate = parseFloat(ratePerKwh);
+      const parsedRate = parseFloat(rate);
       if (isNaN(parsedRate)) return alert("Invalid rate value");
       await api.post("/tariffs/createTariff", {
         tariffType: tariffType.trim(),
-        ratePerKwh: parsedRate,
+        rate: parsedRate,
       });
       setTariffType("");
-      setRatePerKwh("");
+      setRate("");
       fetchTariffs();
     } catch (err) {
       console.error("Error adding tariff:", err);
     }
   };
 
-  const handleEditChange = (id, field, value) => {
-    setEditedTariffs((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        [field]: value,
-      },
-    }));
+  const closeEditModal = () => setEditTariff(null);
+  const closeDeleteModal = () => setDeleteTariffId(null);
+
+  const updateTariffInList = (updatedTariff) => {
+    setTariffs(tariffs.map(t => t.tariffID === updatedTariff.tariffID ? updatedTariff : t));
   };
 
-  const handleSaveEdit = async (id) => {
-    const data = editedTariffs[id];
-    if (!data.tariffType || data.ratePerKwh === "") return;
-    const parsedRate = parseFloat(data.ratePerKwh);
-    if (isNaN(parsedRate)) return alert("Invalid rate value");
-
-    try {
-      await api.put(`/tariffs/update/${id}`, {
-        tariffType: data.tariffType.trim(),
-        ratePerKwh: parsedRate,
-      });
-      setEditIndex(null);
-      setEditedTariffs((prev) => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
-      fetchTariffs();
-    } catch (err) {
-      console.error("Error updating tariff:", err);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/tariffs/delete/${id}`);
-      fetchTariffs();
-    } catch (err) {
-      console.error("Failed to delete tariff:", err);
-    }
+  const removeTariffFromList = (id) => {
+    setTariffs(tariffs.filter(t => t.tariffID !== id));
   };
 
   return (
@@ -97,8 +68,8 @@ const AdminTariffs = () => {
           step="0.0001"
           placeholder="Rate per kWh"
           className="border px-3 py-2 rounded w-full"
-          value={ratePerKwh}
-          onChange={(e) => setRatePerKwh(e.target.value)}
+          value={rate}
+          onChange={(e) => setRate(e.target.value)}
         />
         <button
           onClick={handleAddTariff}
@@ -121,49 +92,17 @@ const AdminTariffs = () => {
           {tariffs.map((t) => (
             <tr key={t.tariffID} className="border-b">
               <td className="py-2 px-4">{t.tariffID}</td>
-              <td className="py-2 px-4">
-                {editIndex === t.tariffID ? (
-                  <input
-                    type="text"
-                    value={editedTariffs[t.tariffID]?.tariffType ?? t.tariffType}
-                    onChange={(e) => handleEditChange(t.tariffID, "tariffType", e.target.value)}
-                    className="border px-2 py-1 rounded w-full"
-                  />
-                ) : (
-                  t.tariffType
-                )}
-              </td>
-              <td className="py-2 px-4">
-                {editIndex === t.tariffID ? (
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={editedTariffs[t.tariffID]?.ratePerKwh ?? t.ratePerKwh ?? t.rate}
-                    onChange={(e) => handleEditChange(t.tariffID, "ratePerKwh", e.target.value)}
-                    className="border px-2 py-1 rounded w-full"
-                  />
-                ) : (
-                  `₱${t.ratePerKwh ?? t.rate}`
-                )}
-              </td>
+              <td className="py-2 px-4">{t.tariffType}</td>
+              <td className="py-2 px-4">₱{t.rate}</td>
               <td className="py-2 px-4 space-x-2">
-                {editIndex === t.tariffID ? (
-                  <button
-                    onClick={() => handleSaveEdit(t.tariffID)}
-                    className="text-green-600 hover:underline text-sm"
-                  >
-                    Save
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setEditIndex(t.tariffID)}
-                    className="text-blue-600 hover:underline text-sm"
-                  >
-                    Edit
-                  </button>
-                )}
                 <button
-                  onClick={() => handleDelete(t.tariffID)}
+                  onClick={() => setEditTariff(t)}
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => setDeleteTariffId(t.tariffID)}
                   className="text-red-600 hover:underline text-sm"
                 >
                   Delete
@@ -180,6 +119,22 @@ const AdminTariffs = () => {
           )}
         </tbody>
       </table>
+
+      {editTariff && (
+        <EditTariffModal
+          tariff={editTariff}
+          onClose={closeEditModal}
+          onUpdated={updateTariffInList}
+        />
+      )}
+
+      {deleteTariffId && (
+        <ConfirmDeleteTariffModal
+          tariffId={deleteTariffId}
+          onClose={closeDeleteModal}
+          onDeleted={removeTariffFromList}
+        />
+      )}
     </div>
   );
 };
