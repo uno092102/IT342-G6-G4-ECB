@@ -67,3 +67,6 @@ credentials.json
 # Misc
 *.bak
 *.tmp
+
+# Local Netlify folder
+.netlify
