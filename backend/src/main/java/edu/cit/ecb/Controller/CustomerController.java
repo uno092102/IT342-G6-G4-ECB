@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -103,17 +102,14 @@ public class CustomerController {
             customer.setAddress(signupRequest.getAddress());
             customer.setUsername(signupRequest.getUsername());
             customer.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+            
+            // Set default role to CUSTOMER
             customer.setRole(Role.CUSTOMER);
 
             cserv.postCustomerAccount(customer);
-
             return ResponseEntity.ok("Signup Successful!");
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                .body("Email or username already exists.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body("Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
 
