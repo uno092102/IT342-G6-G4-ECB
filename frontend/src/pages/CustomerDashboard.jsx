@@ -1,4 +1,6 @@
 import React from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import { FaMoneyBillWave, FaFileInvoice } from "react-icons/fa";
 
 const CustomerDashboard = () => {

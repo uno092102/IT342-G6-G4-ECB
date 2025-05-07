@@ -1,5 +1,7 @@
 // pages/CustomerProfile.jsx
 import React, { useEffect, useState } from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import api from "../api/apiConfig";
 
 const CustomerProfile = () => {

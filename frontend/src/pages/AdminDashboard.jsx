@@ -1,4 +1,6 @@
 import React from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { FaUsers, FaMoneyBillWave, FaUserCheck } from "react-icons/fa";
 
