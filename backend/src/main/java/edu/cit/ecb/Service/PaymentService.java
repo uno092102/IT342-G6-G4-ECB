@@ -71,6 +71,19 @@ public class PaymentService {
         payment.setPaymentMethod(paymentRequest.getPaymentMethod());
         payment.setAmountPaid(paymentRequest.getAmountPaid());
         payment.setBill(billing);
+
+        if (billing != null) {
+            double totalPaid = prepo
+                .findByBill_BillId(billing.getBillId())
+                .stream()
+                .mapToDouble(PaymentEntity::getAmountPaid)
+                .sum() + payment.getAmountPaid();
+    
+            if (totalPaid >= billing.getTotalAmount()) {
+                billing.setStatus("PAID");
+                brepo.save(billing);
+            }
+        }
     
         return prepo.save(payment);
     }
