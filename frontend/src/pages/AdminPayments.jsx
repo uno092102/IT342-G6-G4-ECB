@@ -54,9 +54,10 @@ const AdminPayments = () => {
               <tr key={payment.paymentId} className="border-b hover:bg-gray-50">
                 <td className="py-2 px-4">{payment.paymentId}</td>
                 <td className="py-2 px-4">
-                  {payment.customer?.fname} {payment.customer?.lname}
+                  {payment.customer?.fname ?? ""} {payment.customer?.lname ?? ""}
                 </td>
-                <td className="py-2 px-4">{payment.bill?.billId}</td>
+                <td className="py-2 px-4">{payment.bill?.billId ?? "-"}</td>
+
                 <td className="py-2 px-4">{payment.paymentDate}</td>
                 <td className="py-2 px-4">{payment.paymentMethod}</td>
                 <td className="py-2 px-4">

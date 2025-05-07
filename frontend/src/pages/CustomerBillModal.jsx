@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { normalizeArrayResponse } from '../utils/normalize';
-
 import PayNowModal from "./PayNowModal";
 
 const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay }) => {
@@ -103,13 +101,24 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
             </p>
           )}
 
-          {bill.status !== "PAID" && (
+          {bill.status !== "PAID" && !lastPayment && (
             <div className="mt-6">
               <button
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
                 onClick={() => setShowPayModal(true)}
               >
                 Pay Now
+              </button>
+            </div>
+          )}
+
+          {(bill.status === "PAID" || lastPayment) && (
+            <div className="mt-6">
+              <button
+                className="bg-gray-400 text-white px-6 py-2 rounded cursor-not-allowed"
+                disabled
+              >
+                PAID
               </button>
             </div>
           )}
@@ -123,6 +132,7 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
               onPay(billId, amountPaid, method, (payment) => {
                 setLastPayment(payment);
                 setShowPayModal(false);
+                bill.status = "PAID";
               });
             }}
           />
