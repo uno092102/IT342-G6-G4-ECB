@@ -93,5 +93,8 @@ public class PaymentEntity {
     public void setCustomer(UserEntity customer) {
         this.customer = customer;
     }
-
-}
+    
+    public Integer getBillId() {
+        return bill != null ? bill.getBillId() : null;
+    }
+}   

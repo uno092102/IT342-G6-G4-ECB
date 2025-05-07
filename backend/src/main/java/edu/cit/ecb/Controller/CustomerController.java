@@ -179,9 +179,6 @@ public class CustomerController {
         }
     }
 
-
-
-
     @GetMapping("/userinfo")
     public Map<String, Object> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {
         return principal.getAttributes();
