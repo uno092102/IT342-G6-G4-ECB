@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import api from "../api/apiConfig";
 import EditChargeModal from "./EditChargeModal";
 import ConfirmDeleteChargeModal from "./ConfirmDeleteChargeModal";

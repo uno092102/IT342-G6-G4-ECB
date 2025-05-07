@@ -1,4 +1,6 @@
 import React from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import api from "../api/apiConfig";
 
 const ConfirmDeleteModal = ({ billId, onClose, onDeleted }) => {

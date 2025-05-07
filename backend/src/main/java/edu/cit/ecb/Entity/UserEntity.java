@@ -46,7 +46,7 @@ public class UserEntity {
     private List<BillEntity> bills;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference(value = "user-payment")
     private List<PaymentEntity> payments;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)

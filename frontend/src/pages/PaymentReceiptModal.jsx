@@ -1,4 +1,6 @@
 import React from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 
 const PaymentReceiptModal = ({ receipt, onClose }) => {
   if (!receipt) return null;

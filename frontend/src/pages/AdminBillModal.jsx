@@ -1,4 +1,6 @@
 import React from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 
 const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose }) => {
   if (!bill) return null;

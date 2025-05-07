@@ -1,4 +1,6 @@
 import React, { useState} from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import { useNavigate } from "react-router-dom";
 import api from "../api/apiConfig";
 

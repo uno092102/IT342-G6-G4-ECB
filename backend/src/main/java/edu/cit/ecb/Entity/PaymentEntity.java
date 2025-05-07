@@ -23,13 +23,14 @@ public class PaymentEntity {
     private String paymentMethod;
     private double amountPaid;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "billId", nullable = false)
-    @JsonBackReference
+    @JsonBackReference(value = "bill-payment")
     private BillEntity bill;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accountId", nullable = false)
+    @JsonBackReference(value = "user-payment")
     private UserEntity customer;
 
     public PaymentEntity() {

@@ -1,5 +1,7 @@
 // ConfirmDeleteChargeModal.jsx
 import React from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import api from "../api/apiConfig";
 
 const ConfirmDeleteChargeModal = ({ chargeId, onClose, onDeleted }) => {

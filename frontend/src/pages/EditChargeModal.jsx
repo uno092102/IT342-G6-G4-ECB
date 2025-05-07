@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import api from "../api/apiConfig";
 
 const EditChargeModal = ({ charge, onClose, onUpdated }) => {
