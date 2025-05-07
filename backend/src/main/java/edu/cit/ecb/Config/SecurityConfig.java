@@ -56,7 +56,7 @@ public class SecurityConfig {
             //     .failureUrl("/login?error=true")
             // )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class); // ✅ this fix!
+            .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
 
         return http.build();
     }

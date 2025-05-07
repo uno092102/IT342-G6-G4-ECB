@@ -36,8 +36,8 @@ public class BillEntity {
     @JsonManagedReference
     private ConsumptionEntity consumption; // Added Relationship
 
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "bill-payment")
     private List<PaymentEntity> payments;
 
     // Constructors
