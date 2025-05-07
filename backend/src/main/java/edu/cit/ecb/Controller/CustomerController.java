@@ -57,7 +57,7 @@ public class CustomerController {
         return "Welcome to Electricity Consumption Billing";
     }
 
-    // View Customer Profile (Only accessible by the authenticated customer)
+    // View Customer Profile (Only accessible by the authenx`ticated customer)
     @GetMapping("/profile")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<UserEntity> getCustomerProfile(Authentication authentication) {
