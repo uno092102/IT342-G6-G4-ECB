@@ -45,9 +45,23 @@ public class SecurityConfig {
             .cors().and()
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login/**", "/oauth2/**", "/customer/signup", "/customer/login").permitAll()
+                .requestMatchers(
+                    "/customer/signup",
+                    "/customer/login",
+                    "/customer/complete-profile/**",
+                    "/customer/profile/image/**",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/",
+                    "/error"
+                ).permitAll()
                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/customer/**").hasAuthority("CUSTOMER")
+                .requestMatchers("/payments/**").authenticated()
+                .requestMatchers("/charges/**").hasAuthority("ADMIN")
+                .requestMatchers("/tariffs/**").hasAuthority("ADMIN")
+                .requestMatchers("/bills/**").authenticated()
+                .requestMatchers("/api/consumption/**").authenticated()
                 .anyRequest().authenticated()
             )
             // .oauth2Login(oauth2 -> oauth2

@@ -15,12 +15,12 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                     .allowedOrigins("http://localhost:3000", "https://ecbfrontend.netlify.app")
-
-                    .allowedMethods("*")
-                    .allowedHeaders("*")
-                    .allowCredentials(true);
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                    .allowedHeaders("Authorization", "Content-Type", "Accept", "X-Requested-With")
+                    .exposedHeaders("Authorization")
+                    .allowCredentials(true)
+                    .maxAge(3600);
             }
         };
     }
 }
-
