@@ -24,9 +24,11 @@ public class PaymentService {
     @Autowired
     private UserService cserv;
 
-    public List<PaymentEntity> findAllPaymentRecords(){
-        return prepo.findAll();
+    public List<PaymentEntity> findAllPaymentRecords() {
+        List<PaymentEntity> list = prepo.findAll();
+        return list != null ? list : new ArrayList<>();
     }
+    
 
     public PaymentEntity savePaymentRecord(PaymentEntity payment){
         return prepo.save(payment);
@@ -55,8 +57,10 @@ public class PaymentService {
     }
 
     public List<PaymentEntity> getPaymentRecordsByCustomer(int customerId) {
-        return prepo.findByCustomer_AccountId(customerId);
+        List<PaymentEntity> list = prepo.findByCustomer_AccountId(customerId);
+        return list != null ? list : new ArrayList<>();
     }
+    
     
     public PaymentEntity addPayment(PaymentEntity paymentRequest) {
         BillEntity billing = brepo.findById(paymentRequest.getBill().getBillId()) // Correct method name

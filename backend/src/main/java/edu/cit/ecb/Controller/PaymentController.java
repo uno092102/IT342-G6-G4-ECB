@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Map;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,8 +36,9 @@ public class PaymentController {
     UserService cserv;
 
     @GetMapping("/")
-    public List<PaymentEntity> getAllPayments() {
-        return pserv.findAllPaymentRecords();
+    public ResponseEntity<List<PaymentEntity>> getAllPayments() {
+        List<PaymentEntity> payments = pserv.findAllPaymentRecords();
+        return ResponseEntity.ok(payments != null ? payments : new ArrayList<>());
     }
 
     @GetMapping("/{paymentId}")
@@ -50,11 +52,11 @@ public class PaymentController {
     }
 
     @GetMapping("/customer/{customerId}")
-    public List<PaymentEntity> getPaymentsByCustomer(@PathVariable int customerId) {
-        return pserv.getPaymentRecordsByCustomer(customerId);
+    public ResponseEntity<List<PaymentEntity>> getPaymentsByCustomer(@PathVariable int customerId) {
+        List<PaymentEntity> payments = pserv.getPaymentRecordsByCustomer(customerId);
+        return ResponseEntity.ok(payments != null ? payments : new ArrayList<>());
     }
 
-    // POST Methods
     @PostMapping("/add")
     public ResponseEntity<?> addPayment(@RequestBody Map<String, Object> paymentRequest) {
         try {
@@ -67,10 +69,9 @@ public class PaymentController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bill not found.");
             }
 
-            // ✅ Get currently authenticated user
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            UserEntity customer = cserv.findByUsername(username); // Make sure this exists in UserService
+            UserEntity customer = cserv.findByUsername(username);
 
             if (customer == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated.");
@@ -78,7 +79,7 @@ public class PaymentController {
 
             PaymentEntity payment = new PaymentEntity();
             payment.setBill(bill);
-            payment.setCustomer(customer); // ✅ Fix here
+            payment.setCustomer(customer);
             payment.setAmountPaid(amountPaid);
             payment.setPaymentMethod(paymentMethod);
             payment.setPaymentDate(new Date(System.currentTimeMillis()));
@@ -93,9 +94,6 @@ public class PaymentController {
         }
     }
 
-
-
-    // PUT Methods
     @PutMapping("/update/{paymentId}")
     public ResponseEntity<PaymentEntity> updatePayment(@PathVariable int paymentId, @RequestBody PaymentEntity updatedPayment) {
         try {
@@ -105,7 +103,7 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-    
+
     @DeleteMapping("/delete/{paymentId}")
     public ResponseEntity<String> deletePayment(@PathVariable int paymentId) {
         try {
