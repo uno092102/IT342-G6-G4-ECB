@@ -9,13 +9,6 @@ public class UserUpdateDTO {
     private String email;
     private String phoneNumber;
     private String address;
-    private String password;
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
     private Role role;
 
     // Getters and Setters
