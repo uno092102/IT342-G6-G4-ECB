@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.cit.ecb.DTO.LoginDTO;
 import edu.cit.ecb.DTO.SignupDTO;
-import edu.cit.ecb.DTO.UserUpdateDTO;
 import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Enum.Role;
 import edu.cit.ecb.Repository.UserRepository;
@@ -157,11 +156,12 @@ public class CustomerController {
     // Edit Customer Profile (Only customers can edit their own profiles)
     @PutMapping("/profile/edit/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<?> editProfile(@PathVariable int id, @RequestBody UserUpdateDTO updatedProfile) {
+    public ResponseEntity<?> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
 
         UserEntity loggedInUser = userRepository.findByUsername(currentUsername);
+
         if (loggedInUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
         }
@@ -171,21 +171,13 @@ public class CustomerController {
         }
 
         try {
-            // Only allow editable fields to be changed
-            loggedInUser.setFname(updatedProfile.getFname());
-            loggedInUser.setLname(updatedProfile.getLname());
-            loggedInUser.setEmail(updatedProfile.getEmail());
-            loggedInUser.setPhoneNumber(updatedProfile.getPhoneNumber());
-            loggedInUser.setAddress(updatedProfile.getAddress());
-
-            userRepository.save(loggedInUser);
-            return ResponseEntity.ok("Profile updated successfully.");
+            UserEntity updated = cserv.updateProfile(id, updatedProfile);
+            return ResponseEntity.ok(updated);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update profile.");
         }
     }
-
 
     @GetMapping("/userinfo")
     public Map<String, Object> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {
