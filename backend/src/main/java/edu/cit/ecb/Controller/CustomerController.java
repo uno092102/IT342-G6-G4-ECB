@@ -157,7 +157,7 @@ public class CustomerController {
     // Edit Customer Profile (Only customers can edit their own profiles)
     @PutMapping("/profile/edit/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<?> editProfile(@PathVariable int id, @RequestBody UserUpdateDTO updatedProfile) {
+    public ResponseEntity<?> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
 
