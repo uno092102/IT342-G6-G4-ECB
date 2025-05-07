@@ -23,7 +23,7 @@ const Login = () => {
         }),
       });
   
-      if (response.status === 200) {
+      if (response.ok) {
         const userData = await response.json();
         localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("token", userData.token); // Save the token separately!

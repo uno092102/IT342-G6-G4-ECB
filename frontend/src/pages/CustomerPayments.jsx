@@ -1,4 +1,3 @@
-// pages/CustomerPayments.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api/apiConfig";
 
@@ -10,13 +9,15 @@ const CustomerPayments = () => {
     const fetchPayments = async () => {
       try {
         const res = await api.get(`/payments/customer/${user.accountId}`);
-        setPayments(res.data);
-      } catch (err) {
-        console.error("Error fetching customer payments:", err);
+        const raw = Array.isArray(res.data) ? res.data : res.data.data || [];
+        setPayments(raw);
+      } catch (error) {
+        console.error("Error fetching payments:", error);
       }
     };
+
     fetchPayments();
-  }, [user]);
+  }, [user.accountId]);
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
@@ -27,24 +28,31 @@ const CustomerPayments = () => {
             <tr>
               <th className="py-2 px-4">Payment ID</th>
               <th className="py-2 px-4">Bill ID</th>
-              <th className="py-2 px-4">Date</th>
-              <th className="py-2 px-4">Method</th>
               <th className="py-2 px-4">Amount Paid</th>
+              <th className="py-2 px-4">Method</th>
+              <th className="py-2 px-4">Date</th>
             </tr>
           </thead>
           <tbody>
-            {payments.map((payment) => (
-              <tr key={payment.paymentId} className="border-b hover:bg-gray-50">
-                <td className="py-2 px-4">{payment.paymentId}</td>
-                <td className="py-2 px-4">{payment.bill?.billId}</td>
-                <td className="py-2 px-4">{payment.paymentDate}</td>
-                <td className="py-2 px-4">{payment.paymentMethod}</td>
-                <td className="py-2 px-4">₱{payment.amountPaid.toFixed(2)}</td>
-              </tr>
-            ))}
-            {payments.length === 0 && (
+            {Array.isArray(payments) && payments.length > 0 ? (
+              payments.map((p) => (
+                <tr key={p.paymentId} className="border-b hover:bg-gray-50">
+                  <td className="py-2 px-4">{p.paymentId ?? "N/A"}</td>
+                  <td className="py-2 px-4">{p.billId ?? "N/A"}</td>
+                  <td className="py-2 px-4">
+                    ₱{typeof p.amountPaid === "number" ? p.amountPaid.toFixed(2) : "N/A"}
+                  </td>
+                  <td className="py-2 px-4">{p.paymentMethod ?? "N/A"}</td>
+                  <td className="py-2 px-4">
+                    {p.paymentDate ? new Date(p.paymentDate).toLocaleString() : "N/A"}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
-                <td colSpan={5} className="py-4 text-center text-gray-500">No payments found.</td>
+                <td colSpan={5} className="py-4 text-center text-gray-500">
+                  No payments found.
+                </td>
               </tr>
             )}
           </tbody>

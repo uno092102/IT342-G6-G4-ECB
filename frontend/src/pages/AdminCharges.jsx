@@ -135,7 +135,7 @@ const AdminCharges = () => {
           chargeId={deleteChargeId}
           onClose={closeDeleteModal}
           onDeleted={removeChargeFromList}
-        />  
+        />
       )}
     </div>
   );

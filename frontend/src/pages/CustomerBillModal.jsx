@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import PayNowModal from "./PayNowModal";
 
 const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay }) => {
-  if (!bill) return null;
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [lastPayment, setLastPayment] = useState(null);
 
   const consumption = bill.consumption ?? null;
   const totalKwh = typeof consumption?.totalKwh === "number" ? consumption.totalKwh : "N/A";
@@ -36,9 +38,7 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
 
         <div className="flex justify-between items-center border-b pb-2 mb-4">
           <div>
-            <div className="text-2xl font-bold text-blue-600 mb-10">
-              💡 Your Electricity Bill
-            </div>
+            <div className="text-2xl font-bold text-blue-600 mb-10">💡 Your Electricity Bill</div>
             <h2 className="text-xl font-bold">Electricity Consumption Billing</h2>
             <p className="text-sm text-gray-500">Bill ID: #{bill.billId}</p>
           </div>
@@ -89,18 +89,42 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
           <p><strong>Bill Date:</strong> {formatDate(bill.billDate)}</p>
           <p><strong>Due Date:</strong> {formatDate(bill.dueDate)}</p>
           <p><strong>Created At:</strong> {formatDate(bill.createdAt, true)}</p>
-          <p><strong>Status:</strong> <span className={bill.status === "PAID" ? "text-green-600" : "text-red-600"}>{bill.status}</span></p>
+          <p><strong>Status:</strong> <span className={
+            bill.status === "PAID" ? "text-green-600" :
+            bill.status === "Pending" ? "text-yellow-600" : "text-red-600"
+          }>{bill.status}</span></p>
           <p className="text-xl font-bold mt-2">Total Amount: ₱{bill.totalAmount.toFixed(2)}</p>
 
+          {lastPayment && (
+            <p className="text-sm mt-2 text-gray-600">
+              Last Payment: ₱{lastPayment.amountPaid.toFixed(2)} ({lastPayment.paymentMethod})
+            </p>
+          )}
+
           {bill.status !== "PAID" && (
-            <button
-              className="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
-              onClick={() => onPay(bill.billId)}
-            >
-              Pay Now
-            </button>
+            <div className="mt-6">
+              <button
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
+                onClick={() => setShowPayModal(true)}
+              >
+                Pay Now
+              </button>
+            </div>
           )}
         </div>
+
+        {showPayModal && (
+          <PayNowModal
+            bill={bill}
+            onClose={() => setShowPayModal(false)}
+            onSubmit={(billId, amountPaid, method) => {
+              onPay(billId, amountPaid, method, (payment) => {
+                setLastPayment(payment);
+                setShowPayModal(false);
+              });
+            }}
+          />
+        )}
       </div>
     </div>
   );
