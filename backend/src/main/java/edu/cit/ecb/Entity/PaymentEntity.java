@@ -98,4 +98,8 @@ public class PaymentEntity {
     public Integer getBillId() {
         return bill != null ? bill.getBillId() : null;
     }
+
+    public String getCustomerName() {
+        return customer != null ? customer.getFname() + " " + customer.getLname() : "";
+    }
 }   
