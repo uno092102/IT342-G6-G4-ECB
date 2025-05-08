@@ -27,6 +27,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
+import retrofit2.Response
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -177,13 +179,13 @@ fun RegisterScreen(navController: NavController) {
 
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val response = RetrofitClient.api.register(request)
+                        val response: Response<ResponseBody> = RetrofitClient.api.register(request)
                         withContext(Dispatchers.Main) {
-                            if (response.isSuccessful && response.body()?.success == true) {
+                            if (response.isSuccessful) {
                                 Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
                                 navController.navigate("login")
                             } else {
-                                Toast.makeText(context, "Failed: ${response.body()?.message ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Failed: ${response.errorBody()?.string() ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } catch (e: Exception) {

@@ -1,5 +1,6 @@
 package com.example.ecbapp.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -19,12 +21,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.ecbapp.R
+import com.example.ecbapp.api.RetrofitClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var keepLoggedIn by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -32,7 +40,6 @@ fun LoginScreen(navController: NavController) {
             .padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Gradient header with rounded bottom corners
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -47,7 +54,7 @@ fun LoginScreen(navController: NavController) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_lightbulb), // Add icon to res/drawable
+                    painter = painterResource(id = R.drawable.ic_lightbulb),
                     contentDescription = "Logo",
                     tint = Color.Yellow,
                     modifier = Modifier.size(48.dp)
@@ -119,7 +126,7 @@ fun LoginScreen(navController: NavController) {
                 fontSize = 12.sp,
                 color = Color(0xFF5F86F2),
                 modifier = Modifier.clickable {
-                    navController.navigate("resetNewPassword") // 🔗 Linked!
+                    navController.navigate("resetNewPassword")
                 }
             )
 
@@ -149,7 +156,33 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { navController.navigate("dashboard") },
+            onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val request = mapOf("username" to email, "password" to password)
+                        val response = RetrofitClient.api.login(request)
+
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful) {
+                                val body = response.body()
+                                val token = body?.get("token") as? String
+                                if (token != null) {
+                                    Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
+                                    navController.navigate("dashboard")
+                                } else {
+                                    Toast.makeText(context, "No token received", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Login error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            },
             shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F86F2)),
             modifier = Modifier

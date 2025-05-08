@@ -7,14 +7,17 @@ import com.example.ecbapp.model.LoginResponse
 import com.example.ecbapp.model.UserProfile
 import com.example.ecbapp.model.RegisterRequest
 import com.example.ecbapp.model.RegisterResponse
+import okhttp3.ResponseBody
+
 interface ApiService {
 
     @GET("customer/profile")
     suspend fun getProfile(): Response<UserProfile>
 
-    @POST("customer/login")
-    suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
+    @POST("/customer/login")
+    suspend fun login(@Body request: Map<String, String>): Response<Map<String, Any>>
 
-    @POST("customer/signup")
-    suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
+    @POST("/customer/signup")
+    suspend fun register(@Body request: RegisterRequest): Response<ResponseBody>
+
 }
