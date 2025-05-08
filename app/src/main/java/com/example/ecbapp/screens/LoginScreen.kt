@@ -1,5 +1,6 @@
 package com.example.ecbapp.screens
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -94,9 +95,7 @@ fun LoginScreen(navController: NavController) {
             placeholder = { Text("mail@simmple.com") },
             singleLine = true,
             shape = RoundedCornerShape(14.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -110,9 +109,7 @@ fun LoginScreen(navController: NavController) {
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             shape = RoundedCornerShape(14.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -159,15 +156,19 @@ fun LoginScreen(navController: NavController) {
             onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val request = mapOf("username" to email, "password" to password)
-                        val response = RetrofitClient.api.login(request)
+                        val loginRequest = mapOf("username" to email, "password" to password)
+                        val response = RetrofitClient.api.login(loginRequest)
 
                         withContext(Dispatchers.Main) {
                             if (response.isSuccessful) {
                                 val body = response.body()
-                                val token = body?.get("token") as? String
-                                if (token != null) {
-                                    Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
+                                val token = body?.get("token")?.toString()
+                                if (!token.isNullOrEmpty()) {
+                                    // ✅ Save JWT
+                                    val prefs = context.getSharedPreferences("ecb_prefs", Context.MODE_PRIVATE)
+                                    prefs.edit().putString("jwt", token).apply()
+
+                                    Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
                                     navController.navigate("dashboard")
                                 } else {
                                     Toast.makeText(context, "No token received", Toast.LENGTH_SHORT).show()
@@ -185,9 +186,7 @@ fun LoginScreen(navController: NavController) {
             },
             shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F86F2)),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
+            modifier = Modifier.fillMaxWidth().height(52.dp)
         ) {
             Text(text = "Login", fontSize = 16.sp, color = Color.White)
         }

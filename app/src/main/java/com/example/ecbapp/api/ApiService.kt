@@ -12,7 +12,7 @@ import okhttp3.ResponseBody
 interface ApiService {
 
     @GET("customer/profile")
-    suspend fun getProfile(): Response<UserProfile>
+    suspend fun getProfile(@Header("Authorization") token: String): Response<UserProfile>
 
     @POST("/customer/login")
     suspend fun login(@Body request: Map<String, String>): Response<Map<String, Any>>

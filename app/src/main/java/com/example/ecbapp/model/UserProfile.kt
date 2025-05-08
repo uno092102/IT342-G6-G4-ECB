@@ -1,9 +1,9 @@
 package com.example.ecbapp.model
 
 data class UserProfile(
-    val id: Int,
-    val name: String,
+    val fname: String,
+    val lname: String,
     val email: String,
-    val address: String,
-    val contactNo: String
+    val phoneNumber: String,
+    val address: String
 )
