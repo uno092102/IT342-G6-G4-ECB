@@ -7,6 +7,7 @@ import com.example.ecbapp.model.LoginResponse
 import com.example.ecbapp.model.UserProfile
 import com.example.ecbapp.model.RegisterRequest
 import com.example.ecbapp.model.RegisterResponse
+import com.example.ecbapp.model.SignupDTO
 import okhttp3.ResponseBody
 
 interface ApiService {
@@ -17,7 +18,10 @@ interface ApiService {
     @POST("/customer/login")
     suspend fun login(@Body request: Map<String, String>): Response<Map<String, Any>>
 
-    @POST("/customer/signup")
-    suspend fun register(@Body request: RegisterRequest): Response<ResponseBody>
+    @POST("customer/signup")
+    suspend fun register(@Body request: SignupDTO): Response<ResponseBody>
+
+
+
 
 }

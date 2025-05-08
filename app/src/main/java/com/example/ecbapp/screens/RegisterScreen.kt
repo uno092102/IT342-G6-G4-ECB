@@ -2,7 +2,6 @@ package com.example.ecbapp.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,13 +21,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.ecbapp.R
 import com.example.ecbapp.api.RetrofitClient
-import com.example.ecbapp.model.RegisterRequest
+import com.example.ecbapp.model.SignupDTO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
-import retrofit2.Response
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -86,7 +84,6 @@ fun RegisterScreen(navController: NavController) {
             onValueChange = { firstName = it },
             label = { Text("First Name*") },
             singleLine = true,
-            shape = RoundedCornerShape(14.dp),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -96,7 +93,6 @@ fun RegisterScreen(navController: NavController) {
             onValueChange = { lastName = it },
             label = { Text("Last Name*") },
             singleLine = true,
-            shape = RoundedCornerShape(14.dp),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -105,10 +101,8 @@ fun RegisterScreen(navController: NavController) {
             value = email,
             onValueChange = { email = it },
             label = { Text("Email*") },
-            placeholder = { Text("johndoe@example.com") },
-            singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            shape = RoundedCornerShape(14.dp),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -117,11 +111,9 @@ fun RegisterScreen(navController: NavController) {
             value = password,
             onValueChange = { password = it },
             label = { Text("Password*") },
-            placeholder = { Text("8–16 characters") },
-            singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            shape = RoundedCornerShape(14.dp),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -130,11 +122,9 @@ fun RegisterScreen(navController: NavController) {
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
             label = { Text("Confirm Password*") },
-            placeholder = { Text("8–16 characters") },
-            singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            shape = RoundedCornerShape(14.dp),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -144,7 +134,6 @@ fun RegisterScreen(navController: NavController) {
             onValueChange = { address = it },
             label = { Text("Address*") },
             singleLine = true,
-            shape = RoundedCornerShape(14.dp),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -153,9 +142,8 @@ fun RegisterScreen(navController: NavController) {
             value = contactNo,
             onValueChange = { contactNo = it },
             label = { Text("Contact No.*") },
-            singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            shape = RoundedCornerShape(14.dp),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -168,24 +156,26 @@ fun RegisterScreen(navController: NavController) {
                     return@Button
                 }
 
-                val request = RegisterRequest(
-                    firstName = firstName,
-                    lastName = lastName,
+                val request = SignupDTO(
+                    fname = firstName,
+                    lname = lastName,
+                    username = email.substringBefore("@"),
                     email = email,
                     password = password,
-                    address = address,
-                    contactNo = contactNo
+                    phoneNumber = contactNo,
+                    address = address
                 )
 
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val response: Response<ResponseBody> = RetrofitClient.api.register(request)
+                        val response = RetrofitClient.api.register(request)
                         withContext(Dispatchers.Main) {
                             if (response.isSuccessful) {
                                 Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
                                 navController.navigate("login")
                             } else {
-                                Toast.makeText(context, "Failed: ${response.errorBody()?.string() ?: "Unknown error"}", Toast.LENGTH_SHORT).show()
+                                val errorMsg = response.errorBody()?.string() ?: "Unknown error"
+                                Toast.makeText(context, "Failed: $errorMsg", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } catch (e: Exception) {
@@ -199,7 +189,7 @@ fun RegisterScreen(navController: NavController) {
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5F86F2)),
             modifier = Modifier.fillMaxWidth().height(52.dp)
         ) {
-            Text(text = "Register", fontSize = 16.sp, color = Color.White)
+            Text("Register", fontSize = 16.sp, color = Color.White)
         }
     }
 }
