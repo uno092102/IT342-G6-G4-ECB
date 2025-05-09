@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { normalizeArrayResponse } from '../utils/normalize';
 
 
-const PayNowModal = ({ bill, onClose, onSubmit }) => {
+const PayNowModal = ({ bill, defaultAmount = 0, onClose, onSubmit }) => {
   const [paymentMethod, setPaymentMethod] = useState("GCash");
-  const [amountPaid, setAmountPaid] = useState(bill.totalAmount || 0);
+  const [amountPaid, setAmountPaid] = useState(defaultAmount);
+
 
   return (
     <div

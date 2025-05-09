@@ -1,9 +1,7 @@
 package edu.cit.ecb.Service;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,33 +39,34 @@ public class BillService {
         UserEntity customer = cserv.findByAccountId(bill.getCustomer().getAccountId());
         if (customer == null) throw new IllegalArgumentException("Customer not found.");
         bill.setCustomer(customer);
-    
+
         ConsumptionEntity consumption = crepo.findById(bill.getConsumption().getConsumptionId())
             .orElseThrow(() -> new IllegalArgumentException("Consumption not found."));
         bill.setConsumption(consumption);
-    
-        // ✅ Set billDate to the periodTo of the consumption
+
         Date periodTo = consumption.getPeriodTo();
         bill.setBillDate(periodTo);
-    
-        // ✅ Set dueDate to 30 days after periodTo
+
         long thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000;
         bill.setDueDate(new Date(periodTo.getTime() + thirtyDaysInMillis));
-    
-        // ✅ Calculate amount using charges + tariffs
+
         List<ChargeEntity> charges = chargeRepo.findAll();
         List<TariffEntity> tariffs = trepo.findAll();
         double finalBillAmount = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
         bill.setTotalAmount((float) finalBillAmount);
-    
-        bill.setStatus("Unpaid");
+
+        // ✅ Normalize status
+        if (bill.getStatus() == null || bill.getStatus().trim().isEmpty()) {
+            bill.setStatus("UNPAID");
+        } else {
+            bill.setStatus(bill.getStatus().toUpperCase());
+        }
+
         return brepo.save(bill);
     }
-    
 
     public List<BillEntity> getAllBill() {
-            return brepo.findAllByOrderByCreatedAtDesc();
-        
+        return brepo.findAllByOrderByCreatedAtDesc();
     }
 
     public List<BillEntity> getBillsByCustomerId(int customerId) {
@@ -77,25 +76,30 @@ public class BillService {
     public BillEntity updateBill(int id, BillEntity updatedBill) {
         BillEntity existingBill = brepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
-    
+
         existingBill.setBillDate(updatedBill.getBillDate());
         existingBill.setDueDate(updatedBill.getDueDate());
         existingBill.setCustomer(updatedBill.getCustomer());
-        existingBill.setStatus(updatedBill.getStatus());
-    
-        // Validate and recalculate
+
+        // ✅ Normalize status
+        String status = updatedBill.getStatus();
+        if (status == null || status.trim().isEmpty()) {
+            existingBill.setStatus("UNPAID");
+        } else {
+            existingBill.setStatus(status.toUpperCase());
+        }
+
         ConsumptionEntity consumption = crepo.findById(existingBill.getConsumption().getConsumptionId())
                 .orElseThrow(() -> new IllegalArgumentException("Consumption data not found"));
-    
+
         List<TariffEntity> tariffs = trepo.findAll();
         List<ChargeEntity> charges = chargeRepo.findAll();
-    
+
         double totalAmount = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
         existingBill.setTotalAmount((float) totalAmount);
-    
+
         return brepo.save(existingBill);
     }
-    
 
     public String deleteBill(int id) {
         brepo.deleteById(id);
