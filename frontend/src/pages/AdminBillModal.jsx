@@ -1,33 +1,20 @@
-import React, { useEffect, useState } from "react";
-import api from "../api/apiConfig";
+import React from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 
 const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose }) => {
-  const [updatedBill, setUpdatedBill] = useState(null);
+  if (!bill) return null;
 
-  useEffect(() => {
-    const fetchUpdatedBill = async () => {
-      try {
-        const res = await api.get(`/bills/${bill.billId}`);
-        setUpdatedBill(res.data);
-      } catch (err) {
-        console.error("Failed to fetch updated bill:", err);
-        setUpdatedBill(bill); // fallback to original if error
-      }
-    };
-
-    if (bill?.billId) fetchUpdatedBill();
-  }, [bill]);
-
-  if (!updatedBill) return null;
-
-  const consumption = updatedBill.consumption ?? null;
+  const consumption = bill.consumption ?? null;
   const totalKwh = typeof consumption?.totalKwh === "number" ? consumption.totalKwh : "N/A";
 
   const handleOutsideClick = (e) => {
     if (e.target.id === "modal-overlay") onClose();
   };
 
-  const formatRate = (rate) => (typeof rate === "number" ? rate.toFixed(4) : "N/A");
+  const formatRate = (rate) => {
+    return typeof rate === "number" ? rate.toFixed(4) : "N/A";
+  };
 
   const formatDate = (dateStr, withTime = false) => {
     if (!dateStr) return "N/A";
@@ -57,15 +44,15 @@ const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose }) => {
               💡 Electricity Consumption Billing
             </div>
             <h2 className="text-xl font-bold">Electricity Consumption Billing Portal</h2>
-            <p className="text-sm text-gray-500">Invoice for Bill #{updatedBill.billId}</p>
+            <p className="text-sm text-gray-500">Invoice for Bill #{bill.billId}</p>
           </div>
         </div>
 
         <div className="mb-4">
           <h3 className="font-semibold text-lg mb-1">Customer Information</h3>
-          <p><strong>Name:</strong> {updatedBill.customer?.fname} {updatedBill.customer?.lname}</p>
-          <p><strong>Email:</strong> {updatedBill.customer?.email}</p>
-          <p><strong>Account ID:</strong> {updatedBill.customer?.accountId}</p>
+          <p><strong>Name:</strong> {bill.customer?.fname} {bill.customer?.lname}</p>
+          <p><strong>Email:</strong> {bill.customer?.email}</p>
+          <p><strong>Account ID:</strong> {bill.customer?.accountId}</p>
         </div>
 
         <div className="mb-4">
@@ -110,14 +97,11 @@ const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose }) => {
         </div>
 
         <div className="border-t pt-4">
-          <p><strong>Bill Date:</strong> {formatDate(updatedBill.billDate)}</p>
-          <p><strong>Due Date:</strong> {formatDate(updatedBill.dueDate)}</p>
-          <p><strong>Created At:</strong> {formatDate(updatedBill.createdAt, true)}</p>
-          <p><strong>Status:</strong> <span className={
-            updatedBill.status === "PAID" ? "text-green-600" :
-            updatedBill.status === "PENDING" ? "text-yellow-600" : "text-red-600"
-          }>{updatedBill.status}</span></p>
-          <p className="text-xl font-bold mt-2">Total Amount: ₱{updatedBill.totalAmount.toFixed(2)}</p>
+          <p><strong>Bill Date:</strong> {formatDate(bill.billDate)}</p>
+          <p><strong>Due Date:</strong> {formatDate(bill.dueDate)}</p>
+          <p><strong>Created At:</strong> {formatDate(bill.createdAt, true)}</p>
+          <p><strong>Status:</strong> <span className={bill.status === "PAID" ? "text-green-600" : "text-red-600"}>{bill.status}</span></p>
+          <p className="text-xl font-bold mt-2">Total Amount: ₱{bill.totalAmount.toFixed(2)}</p>
         </div>
       </div>
     </div>

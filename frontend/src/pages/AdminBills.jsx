@@ -16,7 +16,6 @@ const AdminBills = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-  
 
   useEffect(() => {
     const fetchData = async () => {
