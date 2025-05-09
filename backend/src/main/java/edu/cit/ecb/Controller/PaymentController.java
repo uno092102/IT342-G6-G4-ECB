@@ -84,7 +84,7 @@ public class PaymentController {
             payment.setPaymentMethod(paymentMethod);
             payment.setPaymentDate(new Date(System.currentTimeMillis()));
 
-            PaymentEntity saved = pserv.save(payment);
+            PaymentEntity saved = pserv.addPayment(payment);
             return ResponseEntity.ok(saved);
 
         } catch (Exception e) {
