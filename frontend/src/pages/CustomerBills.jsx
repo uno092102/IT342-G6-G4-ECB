@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import api from "../api/apiConfig";
 import CustomerBillModal from "./CustomerBillModal";
 import PaymentReceiptModal from "./PaymentReceiptModal";
@@ -30,18 +32,34 @@ const CustomerBills = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await fetchBills();
-        const tariffsRes = await api.get("/tariffs/getAll");
-        const chargesRes = await api.get("/charges/getAll");
+        const [billsRes, tariffsRes, chargesRes] = await Promise.all([
+          api.get(`/bills/customer/${user.accountId}`),
+          api.get("/tariffs/getAll"),
+          api.get("/charges/getAll"),
+        ]);
+  
+        // ✅ FIX: Normalize .data even if it's not an array
+        const rawBills = Array.isArray(billsRes.data)
+          ? billsRes.data
+          : billsRes.data?.data && Array.isArray(billsRes.data.data)
+            ? billsRes.data.data
+            : [];
+  
+        const sortedBills = rawBills.sort(
+          (a, b) => new Date(b.billDate) - new Date(a.billDate)
+        );
+  
+        setBills(sortedBills);
         setTariffs(tariffsRes.data);
         setCharges(chargesRes.data);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching customer bills:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [user]);
+  
 
   const handleRowClick = async (bill) => {
     try {
@@ -74,6 +92,22 @@ const CustomerBills = () => {
 
       alert("Payment successful!");
       await fetchBills();
+      setSelectedBill(null);
+      setReceipt(res.data);
+
+      // ✅ Normalize updated bills
+      const updatedBillsRes = await api.get(`/bills/customer/${user.accountId}`);
+      const updatedBills = Array.isArray(updatedBillsRes.data)
+        ? updatedBillsRes.data
+        : updatedBillsRes.data?.data && Array.isArray(updatedBillsRes.data.data)
+          ? updatedBillsRes.data.data
+          : [];
+
+      const sortedUpdated = updatedBills.sort(
+        (a, b) => new Date(b.billDate) - new Date(a.billDate)
+      );
+      setBills(sortedUpdated);
+
       setSelectedBill(null);
       setReceipt(res.data);
 
