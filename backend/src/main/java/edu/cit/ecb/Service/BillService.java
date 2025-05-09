@@ -60,7 +60,11 @@ public class BillService {
         double finalBillAmount = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
         bill.setTotalAmount((float) finalBillAmount);
     
-        bill.setStatus("Unpaid");
+        if (bill.getStatus() == null || bill.getStatus().trim().isEmpty()) {
+            bill.setStatus("UNPAID");
+        } else {
+            bill.setStatus(bill.getStatus().toUpperCase());
+        }
         return brepo.save(bill);
     }
     

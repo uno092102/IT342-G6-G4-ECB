@@ -63,39 +63,32 @@ public class PaymentService {
     
     
     public PaymentEntity addPayment(PaymentEntity paymentRequest) {
-        BillEntity billing = brepo.findById(paymentRequest.getBill().getBillId())
+        BillEntity bill = brepo.findById(paymentRequest.getBill().getBillId())
             .orElseThrow(() -> new RuntimeException("Bill not found"));
 
+        double totalAmount = bill.getTotalAmount();
+        double amountToPay = paymentRequest.getAmountPaid();
+
+        // ✅ Reject any payment that is not exactly equal to the total amount
+        if (Double.compare(amountToPay, totalAmount) != 0) {
+            throw new IllegalArgumentException("Please pay the exact bill amount: ₱" + totalAmount);
+        }
+
+        // Create payment entry
         PaymentEntity payment = new PaymentEntity();
         payment.setPaymentDate(paymentRequest.getPaymentDate());
         payment.setPaymentMethod(paymentRequest.getPaymentMethod());
-        payment.setAmountPaid(paymentRequest.getAmountPaid());
+        payment.setAmountPaid(amountToPay);
         payment.setCustomer(paymentRequest.getCustomer());
-        payment.setBill(billing);
+        payment.setBill(bill);
 
+        // Save payment and update bill status to PAID
         PaymentEntity saved = prepo.save(payment);
-
-        // 🔁 Recalculate after saving
-        double totalPaid = prepo
-            .findByBill_BillId(billing.getBillId())
-            .stream()
-            .mapToDouble(PaymentEntity::getAmountPaid)
-            .sum();
-
-        // 🧠 3-tier status logic
-        if (totalPaid >= billing.getTotalAmount()) {
-            billing.setStatus("PAID");
-        } else if (totalPaid > 0) {
-            billing.setStatus("PENDING");
-        } else {
-            billing.setStatus("UNPAID");
-        }
-        brepo.save(billing);
+        bill.setStatus("PAID");
+        brepo.save(bill);
 
         return saved;
     }
-
-
 
     public PaymentEntity save(PaymentEntity payment) {
         return prepo.save(payment);
