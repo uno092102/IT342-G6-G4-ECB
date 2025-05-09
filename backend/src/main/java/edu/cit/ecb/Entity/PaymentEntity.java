@@ -24,7 +24,7 @@ public class PaymentEntity {
     private String paymentMethod;
     private double amountPaid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "billId", nullable = false)
     @JsonBackReference(value = "bill-payment")
     private BillEntity bill;

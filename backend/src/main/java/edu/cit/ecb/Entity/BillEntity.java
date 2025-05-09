@@ -28,7 +28,7 @@ public class BillEntity {
 
     @ManyToOne
     @JoinColumn(name = "accountId", nullable = false)
-    @JsonManagedReference(value = "user-bill")
+    @JsonIgnore
     private UserEntity customer;
 
     @ManyToOne
