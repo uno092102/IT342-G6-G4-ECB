@@ -3,7 +3,6 @@ package edu.cit.ecb.Entity;
 import java.sql.Date;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,16 +23,15 @@ public class PaymentEntity {
     private String paymentMethod;
     private double amountPaid;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "billId", nullable = false)
     @JsonBackReference(value = "bill-payment")
     private BillEntity bill;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accountId", nullable = false)
-    @JsonManagedReference
+    @JsonBackReference(value = "user-payment")
     private UserEntity customer;
-
 
     public PaymentEntity() {
         super();

@@ -42,7 +42,7 @@ public class UserEntity {
 
     
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore 
+    @JsonBackReference(value = "user-bill") 
     private List<BillEntity> bills;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
