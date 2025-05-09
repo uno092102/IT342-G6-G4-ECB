@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { normalizeArrayResponse } from '../utils/normalize';
-
 import api from "../api/apiConfig";
 import CustomerBillModal from "./CustomerBillModal";
 import PaymentReceiptModal from "./PaymentReceiptModal";
@@ -14,37 +12,36 @@ const CustomerBills = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
+  const fetchBills = async () => {
+    const res = await api.get(`/bills/customer/${user.accountId}`);
+    const rawBills = Array.isArray(res.data)
+      ? res.data
+      : res.data?.data && Array.isArray(res.data.data)
+        ? res.data.data
+        : [];
+
+    const sortedBills = rawBills.sort(
+      (a, b) => new Date(b.billDate) - new Date(a.billDate)
+    );
+
+    setBills(sortedBills);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [billsRes, tariffsRes, chargesRes] = await Promise.all([
-          api.get(`/bills/customer/${user.accountId}`),
-          api.get("/tariffs/getAll"),
-          api.get("/charges/getAll"),
-        ]);
-  
-        // ✅ FIX: Normalize .data even if it's not an array
-        const rawBills = Array.isArray(billsRes.data)
-          ? billsRes.data
-          : billsRes.data?.data && Array.isArray(billsRes.data.data)
-            ? billsRes.data.data
-            : [];
-  
-        const sortedBills = rawBills.sort(
-          (a, b) => new Date(b.billDate) - new Date(a.billDate)
-        );
-  
-        setBills(sortedBills);
+        await fetchBills();
+        const tariffsRes = await api.get("/tariffs/getAll");
+        const chargesRes = await api.get("/charges/getAll");
         setTariffs(tariffsRes.data);
         setCharges(chargesRes.data);
       } catch (error) {
-        console.error("Error fetching customer bills:", error);
+        console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
-  }, [user]);
-  
+  }, []);
 
   const handleRowClick = async (bill) => {
     try {
@@ -76,20 +73,7 @@ const CustomerBills = () => {
       });
 
       alert("Payment successful!");
-
-      // ✅ Normalize updated bills
-      const updatedBillsRes = await api.get(`/bills/customer/${user.accountId}`);
-      const updatedBills = Array.isArray(updatedBillsRes.data)
-        ? updatedBillsRes.data
-        : updatedBillsRes.data?.data && Array.isArray(updatedBillsRes.data.data)
-          ? updatedBillsRes.data.data
-          : [];
-
-      const sortedUpdated = updatedBills.sort(
-        (a, b) => new Date(b.billDate) - new Date(a.billDate)
-      );
-      setBills(sortedUpdated);
-
+      await fetchBills();
       setSelectedBill(null);
       setReceipt(res.data);
 
