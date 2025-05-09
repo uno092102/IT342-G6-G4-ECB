@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ArrayList;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +20,6 @@ public class PaymentService {
 
     @Autowired
     private BillRepository brepo;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Autowired
     private UserService cserv;
@@ -97,12 +90,5 @@ public class PaymentService {
 
     public PaymentEntity save(PaymentEntity payment) {
         return prepo.save(payment);
-    }
-
-    public List<Object[]> getDailyPaymentTotals() {
-        Query query = entityManager.createQuery(
-            "SELECT FUNCTION('DATE', p.paymentDate), SUM(p.amountPaid) FROM PaymentEntity p GROUP BY FUNCTION('DATE', p.paymentDate) ORDER BY FUNCTION('DATE', p.paymentDate) ASC"
-        );
-        return query.getResultList();
     }
 }
