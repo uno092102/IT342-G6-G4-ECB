@@ -21,8 +21,4 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, Integer>
     @Modifying
     @Query("DELETE FROM PaymentEntity p WHERE p.bill.billId IN (SELECT b.billId FROM BillEntity b WHERE b.customer.accountId = :customerId)")
     void deleteByCustomerId(@Param("customerId") int customerId);
-
-    @Query("SELECT DATE(p.paymentDate), SUM(p.amountPaid) FROM PaymentEntity p GROUP BY DATE(p.paymentDate) ORDER BY DATE(p.paymentDate)")
-    List<Object[]> getDailyPaymentTotals();
-
 }

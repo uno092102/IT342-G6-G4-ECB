@@ -3,10 +3,8 @@ package edu.cit.ecb.Controller;
 import java.sql.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -124,16 +122,4 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payment record not found with id: " + paymentId);
         }
     }
-
-    @GetMapping("/daily-summary")
-    public List<Map<String, Object>> getDailyPaymentSummary() {
-        List<Object[]> raw = pserv.getDailyPaymentTotals();
-        return raw.stream().map(row -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("date", row[0].toString());
-            map.put("total", row[1]);
-            return map;
-        }).collect(Collectors.toList());
-    }
-
 }

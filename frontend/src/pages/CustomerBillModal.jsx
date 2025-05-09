@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { normalizeArrayResponse } from '../utils/normalize';
+
 import PayNowModal from "./PayNowModal";
 
 const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay }) => {
