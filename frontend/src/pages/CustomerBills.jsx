@@ -9,6 +9,7 @@ const CustomerBills = () => {
   const [tariffs, setTariffs] = useState([]);
   const [charges, setCharges] = useState([]);
   const [receipt, setReceipt] = useState(null);
+  
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -19,11 +20,9 @@ const CustomerBills = () => {
       : res.data?.data && Array.isArray(res.data.data)
         ? res.data.data
         : [];
-
     const sortedBills = rawBills.sort(
       (a, b) => new Date(b.billDate) - new Date(a.billDate)
     );
-
     setBills(sortedBills);
   };
 
@@ -39,7 +38,6 @@ const CustomerBills = () => {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, []);
 
@@ -67,15 +65,16 @@ const CustomerBills = () => {
 
     try {
       const res = await api.post("/payments/add", {
-        billId,
-        amountPaid,
-        paymentMethod,
-      });
+      billId,
+      amountPaid,
+      paymentMethod,
+    });
 
+      const { payment, updatedBill } = res.data;
       alert("Payment successful!");
-      await fetchBills();
-      setSelectedBill(null);
-      setReceipt(res.data);
+      setReceipt(payment);
+      setSelectedBill(updatedBill); // ✅ shows updated status
+      await fetchBills(); 
 
       if (callback) callback(res.data);
     } catch (error) {
@@ -111,9 +110,9 @@ const CustomerBills = () => {
                   <td className="py-2 px-4">{bill.dueDate}</td>
                   <td className="py-2 px-4">₱{bill.totalAmount.toFixed(2)}</td>
                   <td className="py-2 px-4 font-medium">
+                    {(!bill.status || bill.status === "UNPAID") && <span className="text-red-500">UNPAID</span>}
+                    {bill.status === "PENDING" && <span className="text-yellow-500">PENDING</span>}
                     {bill.status === "PAID" && <span className="text-green-600">PAID</span>}
-                    {bill.status === "Pending" && <span className="text-yellow-500">PENDING</span>}
-                    {bill.status === "Unpaid" && <span className="text-red-500">UNPAID</span>}
                   </td>
                 </tr>
               ))
@@ -137,7 +136,6 @@ const CustomerBills = () => {
           onPay={handlePayNow}
         />
       )}
-
       {receipt && (
         <PaymentReceiptModal
           receipt={receipt}

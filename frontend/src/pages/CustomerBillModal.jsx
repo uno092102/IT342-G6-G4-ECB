@@ -3,7 +3,9 @@ import PayNowModal from "./PayNowModal";
 
 const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay }) => {
   const [showPayModal, setShowPayModal] = useState(false);
-  const [lastPayment, setLastPayment] = useState(null);
+  const [lastPayment, setLastPayment] = useState(
+    bill?.payments?.length > 0 ? bill.payments[bill.payments.length - 1] : null
+  );
 
   const consumption = bill.consumption ?? null;
   const totalKwh = typeof consumption?.totalKwh === "number" ? consumption.totalKwh : "N/A";
@@ -21,6 +23,9 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
       : { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateStr).toLocaleDateString(undefined, options);
   };
+
+  const totalPaid = bill.payments?.reduce((sum, p) => sum + p.amountPaid, 0) || 0;
+  const remaining = Math.max(0, bill.totalAmount - totalPaid);
 
   return (
     <div
@@ -91,7 +96,7 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
           <p><strong>Created At:</strong> {formatDate(bill.createdAt, true)}</p>
           <p><strong>Status:</strong> <span className={
             bill.status === "PAID" ? "text-green-600" :
-            bill.status === "Pending" ? "text-yellow-600" : "text-red-600"
+            bill.status === "PENDING" ? "text-yellow-600" : "text-red-600"
           }>{bill.status}</span></p>
           <p className="text-xl font-bold mt-2">Total Amount: ₱{bill.totalAmount.toFixed(2)}</p>
 
@@ -101,7 +106,7 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
             </p>
           )}
 
-          {bill.status !== "PAID" && !lastPayment && (
+          {bill.status !== "PAID" && (
             <div className="mt-6">
               <button
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
@@ -111,28 +116,17 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
               </button>
             </div>
           )}
-
-          {(bill.status === "PAID" || lastPayment) && (
-            <div className="mt-6">
-              <button
-                className="bg-gray-400 text-white px-6 py-2 rounded cursor-not-allowed"
-                disabled
-              >
-                PAID
-              </button>
-            </div>
-          )}
         </div>
 
         {showPayModal && (
           <PayNowModal
             bill={bill}
+            defaultAmount={remaining}
             onClose={() => setShowPayModal(false)}
             onSubmit={(billId, amountPaid, method) => {
               onPay(billId, amountPaid, method, (payment) => {
                 setLastPayment(payment);
                 setShowPayModal(false);
-                bill.status = "PAID";
               });
             }}
           />

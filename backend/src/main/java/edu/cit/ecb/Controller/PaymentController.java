@@ -87,7 +87,15 @@ public class PaymentController {
             payment.setPaymentDate(new Date(System.currentTimeMillis()));
 
             PaymentEntity saved = pserv.addPayment(payment);
-            return ResponseEntity.ok(saved);
+
+            // Re-fetch updated bill to include status change
+            BillEntity updatedBill = billService.findBillById(billId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("payment", saved);
+            response.put("updatedBill", updatedBill);
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -95,6 +103,7 @@ public class PaymentController {
                     .body("Error processing payment: " + e.getMessage());
         }
     }
+
 
     @PutMapping("/update/{paymentId}")
     public ResponseEntity<PaymentEntity> updatePayment(@PathVariable int paymentId, @RequestBody PaymentEntity updatedPayment) {
