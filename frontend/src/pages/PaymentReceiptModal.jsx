@@ -7,7 +7,7 @@ const PaymentReceiptModal = ({ receipt, onClose }) => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleString();
+    return new Date(dateStr).toLocaleDateString();
   };
 
   return (

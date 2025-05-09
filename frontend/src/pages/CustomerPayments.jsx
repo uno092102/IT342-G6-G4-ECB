@@ -16,7 +16,7 @@ const CustomerPayments = () => {
       } catch (error) {
         console.error("Error fetching payments:", error);
       }
-    };
+    }; 
 
     fetchPayments();
   }, [user.accountId]);
@@ -46,7 +46,7 @@ const CustomerPayments = () => {
                   </td>
                   <td className="py-2 px-4">{p.paymentMethod ?? "N/A"}</td>
                   <td className="py-2 px-4">
-                    {p.paymentDate ? new Date(p.paymentDate).toLocaleString() : "N/A"}
+                    {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : "N/A"}
                   </td>
                 </tr>
               ))
