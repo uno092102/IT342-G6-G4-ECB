@@ -42,7 +42,8 @@ const EditBillModal = ({ bill, onClose, onUpdated }) => {
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
             >
-              <option value="Unpaid">Unpaid</option>
+              <option value="UNPAID">Unpaid</option>
+              <option value="PENDING">Pending</option>
               <option value="PAID">Paid</option>
             </select>
           </div>

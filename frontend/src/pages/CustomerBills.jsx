@@ -132,7 +132,6 @@ const CustomerBills = () => {
               <th className="py-2 px-4">Due Date</th>
               <th className="py-2 px-4">Total Amount</th>
               <th className="py-2 px-4">Status</th>
-              <th className="py-2 px-4">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -150,19 +149,6 @@ const CustomerBills = () => {
                     {bill.status === "PAID" && <span className="text-green-600">PAID</span>}
                     {bill.status === "PENDING" && <span className="text-yellow-500">PENDING</span>}
                     {bill.status === "UNPAID" && <span className="text-red-500">UNPAID</span>}
-                  </td>
-                  <td className="py-2 px-4">
-                    {bill.status !== "PAID" && (
-                      <button
-                        onClick={() => {
-                          setSelectedBill(bill);
-                          setShowPayModal(true);
-                        }}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Pay Now
-                      </button>
-                    )}
                   </td>
                 </tr>
               ))

@@ -76,11 +76,6 @@ public class PaymentService {
             BigDecimal billAmount = new BigDecimal(totalAmount).setScale(2, RoundingMode.HALF_UP);
             BigDecimal paymentAmount = new BigDecimal(amountToPay).setScale(2, RoundingMode.HALF_UP);
 
-            // Compare the rounded amounts
-            if (billAmount.compareTo(paymentAmount) != 0) {
-                throw new IllegalArgumentException("Please pay the exact bill amount: ₱" + billAmount);
-            }
-
             // Create payment entry
             PaymentEntity payment = new PaymentEntity();
             payment.setPaymentDate(new Date(System.currentTimeMillis()));
@@ -89,9 +84,15 @@ public class PaymentService {
             payment.setCustomer(paymentRequest.getCustomer());
             payment.setBill(bill);
 
-            // Save payment and update bill status to PAID
+            // Save payment
             PaymentEntity saved = prepo.save(payment);
-            bill.setStatus("PAID");
+
+            // Update bill status based on payment amount
+            if (paymentAmount.compareTo(billAmount) >= 0) {
+                bill.setStatus("PAID");
+            } else if (paymentAmount.compareTo(BigDecimal.ZERO) > 0) {
+                bill.setStatus("PENDING");
+            }
             brepo.save(bill);
 
             return saved;

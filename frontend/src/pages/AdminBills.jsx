@@ -108,7 +108,10 @@ const AdminBills = () => {
                 <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>{bill.dueDate}</td>
                 <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>₱{bill.totalAmount.toFixed(2)}</td>
                 <td
-                  className={`py-2 px-4 font-medium cursor-pointer ${bill.status === "PAID" ? "text-green-600" : "text-red-500"}`}
+                  className={`py-2 px-4 font-medium cursor-pointer ${
+                    bill.status === "PAID" ? "text-green-600" :
+                    bill.status === "PENDING" ? "text-yellow-500" : "text-red-500"
+                  }`}
                   onClick={() => handleRowClick(bill)}
                 >
                   {bill.status}
