@@ -52,10 +52,10 @@ public class SecurityConfig {
                 .requestMatchers("/customer/**").hasAuthority("CUSTOMER")
                 .anyRequest().authenticated()
             )
-            // .oauth2Login(oauth2 -> oauth2
-            //     .successHandler(oAuth2SuccessHandler)
-            //     .failureUrl("/login?error=true")
-            // )
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2SuccessHandler)
+                .failureUrl("/login?error=true")
+            )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
 
