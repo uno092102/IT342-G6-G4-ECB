@@ -54,7 +54,7 @@ const Login = () => {
   };
 
   return (
-    <GoogleOAuthProvider clientId="538456243551-fnt03d2fmirm005mp86iivecoeqp40ha.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || "538456243551-fnt03d2fmirm005mp86iivecoeqp40ha.apps.googleusercontent.com"}>
       <div className="flex min-h-screen font-sans">
         {/* Left Section */}
         <div className="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-24 py-12 bg-white">

@@ -57,7 +57,9 @@ const AdminPayments = () => {
                   {payment.customer?.fname} {payment.customer?.lname}
                 </td>
                 <td className="py-2 px-4">{payment.bill?.billId}</td>
-                <td className="py-2 px-4">{payment.paymentDate}</td>
+                <td className="py-2 px-4">
+                  {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : "N/A"}
+                </td>
                 <td className="py-2 px-4">{payment.paymentMethod}</td>
                 <td className="py-2 px-4">
                   ₱{payment.amountPaid ? payment.amountPaid.toFixed(2) : "0.00"}
@@ -75,8 +77,6 @@ const AdminPayments = () => {
         </table>
       </div>
       
-      
-      
       <div className="flex justify-between items-center mt-4">
         <div className="text-sm text-gray-600 mb-2">
           Showing {startRecord}-{endRecord} of {totalRecords} records
@@ -89,8 +89,6 @@ const AdminPayments = () => {
           >
             Previous
           </button>
-        
-        
           <button
             onClick={handleNextPage}
             disabled={endRecord >= totalRecords}

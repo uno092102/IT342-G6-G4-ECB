@@ -65,7 +65,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         // Redirect to frontend with token and user info
-        String redirectUrl = String.format("http://localhost:3000/oauth2-success?token=%s&role=%s&email=%s",
+        String redirectUrl = String.format("https://ecbfrontend.netlify.app/oauth2-success?token=%s&role=%s&email=%s",
             URLEncoder.encode(token, StandardCharsets.UTF_8),
             URLEncoder.encode(user.getRole().name(), StandardCharsets.UTF_8),
             URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8));

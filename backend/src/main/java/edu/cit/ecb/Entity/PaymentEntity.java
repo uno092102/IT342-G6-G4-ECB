@@ -3,6 +3,8 @@ package edu.cit.ecb.Entity;
 import java.sql.Date;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,12 +27,12 @@ public class PaymentEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "billId", nullable = false)
-    @JsonBackReference(value = "bill-payment")
+    @JsonManagedReference(value = "bill-payment")
     private BillEntity bill;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "accountId", nullable = false)
-    @JsonBackReference(value = "user-payment")
+    @JsonManagedReference(value = "user-payment")
     private UserEntity customer;
 
     public PaymentEntity() {
@@ -95,10 +97,12 @@ public class PaymentEntity {
         this.customer = customer;
     }
     
+    @JsonProperty("billId")
     public Integer getBillId() {
         return bill != null ? bill.getBillId() : null;
     }
 
+    @JsonProperty("customerName")
     public String getCustomerName() {
         return customer != null ? customer.getFname() + " " + customer.getLname() : "";
     }
