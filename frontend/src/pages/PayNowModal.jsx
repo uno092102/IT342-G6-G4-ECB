@@ -1,15 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { normalizeArrayResponse } from '../utils/normalize';
+import api from "../api/apiConfig";
 
 const PayNowModal = ({ bill, onClose, onSubmit }) => {
   const [paymentMethod, setPaymentMethod] = useState("GCash");
-  const [amountPaid, setAmountPaid] = useState(bill.totalAmount ? Number(bill.totalAmount.toFixed(2)) : 0);
+  const [amountPaid, setAmountPaid] = useState(0);
   const [error, setError] = useState("");
+  const [remainingBalance, setRemainingBalance] = useState(bill.totalAmount);
+  const [totalPaid, setTotalPaid] = useState(0);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const res = await api.get(`/payments/bill/${bill.billId}`);
+        const payments = Array.isArray(res.data) ? res.data : [];
+        const totalPaidAmount = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+        setTotalPaid(totalPaidAmount);
+        setRemainingBalance(bill.totalAmount - totalPaidAmount);
+        setAmountPaid(bill.totalAmount - totalPaidAmount); // Default to remaining balance
+      } catch (err) {
+        console.error("Error fetching payments:", err);
+      }
+    };
+    fetchPayments();
+  }, [bill.billId, bill.totalAmount]);
 
   const handleSubmit = () => {
     try {
       if (!amountPaid || amountPaid <= 0) {
         setError("Please enter a valid amount.");
+        return;
+      }
+
+      if (amountPaid > remainingBalance) {
+        setError("Amount cannot exceed remaining balance.");
         return;
       }
 
@@ -19,7 +43,7 @@ const PayNowModal = ({ bill, onClose, onSubmit }) => {
         billId: bill.billId,
         amountPaid: roundedAmount,
         paymentMethod,
-        originalAmount: bill.totalAmount
+        remainingBalance
       });
       
       onSubmit(bill.billId, roundedAmount, paymentMethod);
@@ -69,11 +93,13 @@ const PayNowModal = ({ bill, onClose, onSubmit }) => {
               value={amountPaid}
               onChange={(e) => setAmountPaid(Number(e.target.value))}
               min={0}
-              max={bill.totalAmount}
+              max={remainingBalance}
             />
-            <p className="text-sm text-gray-500 mt-1">
-              Bill Amount: ₱{bill.totalAmount.toFixed(2)}
-            </p>
+            <div className="text-sm text-gray-500 mt-1 space-y-1">
+              <p>Total Bill Amount: ₱{bill.totalAmount.toFixed(2)}</p>
+              <p>Amount Paid: ₱{totalPaid.toFixed(2)}</p>
+              <p>Remaining Balance: ₱{remainingBalance.toFixed(2)}</p>
+            </div>
           </div>
 
           {error && (

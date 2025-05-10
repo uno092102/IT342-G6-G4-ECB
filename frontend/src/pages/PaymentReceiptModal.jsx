@@ -1,8 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { normalizeArrayResponse } from '../utils/normalize';
-
+import api from "../api/apiConfig";
 
 const PaymentReceiptModal = ({ receipt, onClose }) => {
+  const [remainingBalance, setRemainingBalance] = useState(0);
+  const [totalPaid, setTotalPaid] = useState(0);
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const res = await api.get(`/payments/bill/${receipt.billId}`);
+        const payments = Array.isArray(res.data) ? res.data : [];
+        const totalPaidAmount = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+        setTotalPaid(totalPaidAmount);
+        setRemainingBalance(receipt.bill?.totalAmount - totalPaidAmount);
+      } catch (err) {
+        console.error("Error fetching payments:", err);
+      }
+    };
+    if (receipt?.billId) {
+      fetchPayments();
+    }
+  }, [receipt]);
+
   if (!receipt) return null;
 
   const formatDate = (dateStr) => {
@@ -37,6 +57,8 @@ const PaymentReceiptModal = ({ receipt, onClose }) => {
             {typeof receipt.amountPaid === "number" ? receipt.amountPaid.toFixed(2) : "N/A"}
           </p>
           <p><strong>Date Paid:</strong> {formatDate(receipt.paymentDate)}</p>
+          <p><strong>Total Amount Paid:</strong> ₱{totalPaid.toFixed(2)}</p>
+          <p><strong>Remaining Balance:</strong> ₱{remainingBalance.toFixed(2)}</p>
         </div>
 
         <div className="mt-6 text-center">
