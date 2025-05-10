@@ -71,6 +71,7 @@ public class PaymentController {
             int billId = (int) paymentRequest.get("billId");
             double amountPaid = ((Number) paymentRequest.get("amountPaid")).doubleValue();
             String paymentMethod = (String) paymentRequest.get("paymentMethod");
+            String paymentDateStr = (String) paymentRequest.get("paymentDate");
 
             // Round the amount to 2 decimal places
             BigDecimal roundedAmount = new BigDecimal(amountPaid).setScale(2, RoundingMode.HALF_UP);
@@ -94,7 +95,10 @@ public class PaymentController {
             payment.setCustomer(customer);
             payment.setAmountPaid(amountPaid);
             payment.setPaymentMethod(paymentMethod);
-            payment.setPaymentDate(new Date(System.currentTimeMillis()));
+            
+            // Parse the payment date from the request
+            Date paymentDate = paymentDateStr != null ? Date.valueOf(paymentDateStr) : new Date(System.currentTimeMillis());
+            payment.setPaymentDate(paymentDate);
 
             PaymentEntity saved = pserv.addPayment(payment);
             System.out.println("Bill Amount in DB: " + bill.getTotalAmount());
