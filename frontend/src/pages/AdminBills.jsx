@@ -17,18 +17,62 @@ const AdminBills = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
+  const fetchBills = async () => {
+    try {
+      const billsRes = await api.get("/bills/getAllBills");
+      const rawBills = Array.isArray(billsRes.data) ? billsRes.data : [];
+
+      // Fetch payments for each bill to calculate remaining balance and status
+      const billsWithPayments = await Promise.all(
+        rawBills.map(async (bill) => {
+          try {
+            const paymentsRes = await api.get(`/payments/bill/${bill.billId}`);
+            const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+            const totalPaid = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+            const remainingBalance = bill.totalAmount - totalPaid;
+            
+            let status = "UNPAID";
+            if (remainingBalance <= 0) {
+              status = "PAID";
+            } else if (totalPaid > 0) {
+              status = "PENDING";
+            }
+
+            return {
+              ...bill,
+              status: status,
+              totalPaid,
+              remainingBalance
+            };
+          } catch (err) {
+            console.error(`Error fetching payments for bill ${bill.billId}:`, err);
+            return {
+              ...bill,
+              status: bill.status?.toUpperCase() || "UNPAID",
+              totalPaid: 0,
+              remainingBalance: bill.totalAmount
+            };
+          }
+        })
+      );
+
+      setBills(billsWithPayments);
+    } catch (error) {
+      console.error("Error fetching bills:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [billsRes, tariffsRes, chargesRes] = await Promise.all([
-          api.get("/bills/getAllBills"),
+        const [tariffsRes, chargesRes] = await Promise.all([
           api.get("/tariffs/getAll"),
           api.get("/charges/getAll"),
         ]);
 
-        setBills(billsRes.data);
         setTariffs(tariffsRes.data);
         setCharges(chargesRes.data);
+        await fetchBills();
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -40,7 +84,25 @@ const AdminBills = () => {
   const handleRowClick = async (bill) => {
     try {
       const res = await api.get(`/bills/${bill.billId}`);
-      setSelectedBill(res.data);
+      // Include payment information in the selected bill
+      const paymentsRes = await api.get(`/payments/bill/${bill.billId}`);
+      const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+      const totalPaid = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+      const remainingBalance = res.data.totalAmount - totalPaid;
+      
+      let status = "UNPAID";
+      if (remainingBalance <= 0) {
+        status = "PAID";
+      } else if (totalPaid > 0) {
+        status = "PENDING";
+      }
+
+      setSelectedBill({
+        ...res.data,
+        status,
+        totalPaid,
+        remainingBalance
+      });
     } catch (err) {
       console.error("Failed to fetch full bill info:", err);
     }
@@ -60,6 +122,8 @@ const AdminBills = () => {
 
   const updateBillInList = (updatedBill) => {
     setBills(bills.map(b => b.billId === updatedBill.billId ? updatedBill : b));
+    // Refresh the bills list to get updated status
+    fetchBills();
   };
 
   const removeBillFromList = (id) => {
@@ -171,6 +235,7 @@ const AdminBills = () => {
           tariffs={tariffs}
           charges={charges}
           onClose={closeModal}
+          onUpdated={fetchBills}
         />
       )}
 

@@ -50,7 +50,7 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://ecb-backend.onrender.com/oauth2/authorization/google";
+    window.location.href = `${process.env.REACT_APP_API_BASE}/oauth2/authorization/google`;
   };
 
   return (

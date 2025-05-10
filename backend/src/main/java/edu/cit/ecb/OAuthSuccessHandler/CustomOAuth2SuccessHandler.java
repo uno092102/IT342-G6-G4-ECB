@@ -21,12 +21,16 @@ import java.util.List;
 import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Enum.Role;
 import edu.cit.ecb.Repository.UserRepository;
+import edu.cit.ecb.JWT.JwtUtil;
 
 @Component
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -50,20 +54,22 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             userRepository.save(user);
         }
 
-        // 👇 Pass user role and email to frontend
+        // Generate JWT token
+        String token = jwtUtil.generateToken(user.getUsername());
+
+        // Set up authentication
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().toString());
-        User userPrincipal = new User(user.getUsername(), "", List.of(new SimpleGrantedAuthority(user.getRole().toString())));
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
+        User userPrincipal = new User(user.getUsername(), "", List.of(authority));
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+            userPrincipal, null, userPrincipal.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        System.out.println("Authority after OAuth login: " + auth.getAuthorities());
-
-        String redirectUrl = String.format("http://localhost:3000/oauth2-success?role=%s&email=%s",
+        // Redirect to frontend with token and user info
+        String redirectUrl = String.format("http://localhost:3000/oauth2-success?token=%s&role=%s&email=%s",
+            URLEncoder.encode(token, StandardCharsets.UTF_8),
             URLEncoder.encode(user.getRole().name(), StandardCharsets.UTF_8),
             URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8));
 
         response.sendRedirect(redirectUrl);
-
     }
 }

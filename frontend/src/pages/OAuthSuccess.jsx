@@ -1,6 +1,4 @@
 import React, { useEffect } from "react";
-import { normalizeArrayResponse } from '../utils/normalize';
-
 import { useNavigate } from "react-router-dom";
 import api from "../api/apiConfig";
 
@@ -9,13 +7,28 @@ const OAuth2Success = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
     const role = params.get("role");
     const email = params.get("email");
 
+    if (!token || !role || !email) {
+      navigate("/login");
+      return;
+    }
+
+    // Store token and user info
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify({
+      email: email,
+      role: role
+    }));
+
     const fetchProfile = async () => {
       try {
-        const res = await api.get("/customer/profile", { withCredentials: true });
+        const res = await api.get("/customer/profile");
         const user = res.data;
+        
+        // Update stored user info with complete profile
         localStorage.setItem("user", JSON.stringify({
           accountId: user.accountId,
           username: user.username,
@@ -24,10 +37,8 @@ const OAuth2Success = () => {
         }));
 
         if (user.phoneNumber == null || user.phoneNumber === "") {
-          // Redirect to profile completion screen (optional)
           navigate("/profile");
         } else {
-          // Redirect based on role
           if (role === "ADMIN") {
             navigate("/admin/dashboard");
           } else {
@@ -36,15 +47,11 @@ const OAuth2Success = () => {
         }
       } catch (err) {
         console.error("OAuth fetch profile error:", err);
-        navigate("/login"); // fallback
+        navigate("/login");
       }
     };
 
-    if (role && email) {
-      fetchProfile();
-    } else {
-      navigate("/login");
-    }
+    fetchProfile();
   }, [navigate]);
 
   return (

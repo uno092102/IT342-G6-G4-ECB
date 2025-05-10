@@ -1,29 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { normalizeArrayResponse } from '../utils/normalize';
 import api from "../api/apiConfig";
+import { normalizeArrayResponse } from '../utils/normalize';
+import PayNowModal from "./PayNowModal";
 
-const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose }) => {
-  const [payments, setPayments] = useState([]);
+const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose, onUpdated }) => {
+  const [showPayModal, setShowPayModal] = useState(false);
   const [totalPaid, setTotalPaid] = useState(0);
   const [remainingBalance, setRemainingBalance] = useState(bill.totalAmount);
+  const [billStatus, setBillStatus] = useState(bill.status);
 
   useEffect(() => {
     const fetchPayments = async () => {
       try {
         const res = await api.get(`/payments/bill/${bill.billId}`);
         const paymentList = Array.isArray(res.data) ? res.data : [];
-        setPayments(paymentList);
         const totalPaidAmount = paymentList.reduce((sum, p) => sum + p.amountPaid, 0);
         setTotalPaid(totalPaidAmount);
-        setRemainingBalance(bill.totalAmount - totalPaidAmount);
+        const remaining = bill.totalAmount - totalPaidAmount;
+        setRemainingBalance(remaining);
+        
+        // Update bill status based on remaining balance
+        if (remaining <= 0) {
+          setBillStatus("PAID");
+        } else if (totalPaidAmount > 0) {
+          setBillStatus("PENDING");
+        } else {
+          setBillStatus("UNPAID");
+        }
       } catch (err) {
         console.error("Error fetching payments:", err);
       }
     };
     fetchPayments();
-  }, [bill.billId, bill.totalAmount]);
-
-  if (!bill) return null;
+  }, [bill.billId, bill.totalAmount, bill.status]);
 
   const consumption = bill.consumption ?? null;
   const totalKwh = typeof consumption?.totalKwh === "number" ? consumption.totalKwh : "N/A";
@@ -44,6 +53,42 @@ const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose }) => {
       : date.toLocaleDateString();
   };
 
+  const handlePayNow = async (billId, amountPaid, paymentMethod) => {
+    try {
+      const res = await api.post("/payments/add", {
+        billId,
+        amountPaid,
+        paymentMethod,
+      });
+
+      // Refresh the bill data
+      const updatedBillRes = await api.get(`/bills/${billId}`);
+      const paymentsRes = await api.get(`/payments/bill/${billId}`);
+      const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+      const totalPaidAmount = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+      const remaining = updatedBillRes.data.totalAmount - totalPaidAmount;
+      
+      let status = "UNPAID";
+      if (remaining <= 0) {
+        status = "PAID";
+      } else if (totalPaidAmount > 0) {
+        status = "PENDING";
+      }
+
+      setTotalPaid(totalPaidAmount);
+      setRemainingBalance(remaining);
+      setBillStatus(status);
+      setShowPayModal(false);
+
+      // Notify parent component to refresh the bills list
+      if (onUpdated) {
+        onUpdated();
+      }
+    } catch (error) {
+      console.error("Payment failed:", error);
+    }
+  };
+
   return (
     <div
       id="modal-overlay"
@@ -60,99 +105,97 @@ const AdminBillModal = ({ bill, tariffs = [], charges = [], onClose }) => {
 
         <div className="flex justify-between items-center border-b pb-2 mb-4">
           <div>
-            <div className="text-2xl font-bold text-indigo-600 mb-10">
-              💡 Electricity Consumption Billing
-            </div>
-            <h2 className="text-xl font-bold">Electricity Consumption Billing Portal</h2>
-            <p className="text-sm text-gray-500">Invoice for Bill #{bill.billId}</p>
+            <div className="text-2xl font-bold text-blue-600 mb-10">💡 Bill Details</div>
+            <h2 className="text-xl font-bold">Electricity Consumption Billing</h2>
+            <p className="text-sm text-gray-500">Bill ID: #{bill.billId}</p>
           </div>
         </div>
 
-        <div className="mb-4">
-          <h3 className="font-semibold text-lg mb-1">Customer Information</h3>
-          <p><strong>Name:</strong> {bill.customer?.fname} {bill.customer?.lname}</p>
-          <p><strong>Email:</strong> {bill.customer?.email}</p>
-          <p><strong>Account ID:</strong> {bill.customer?.accountId}</p>
-        </div>
-
-        <div className="mb-4">
-          <h3 className="font-semibold text-lg mb-1">Consumption Details</h3>
-          <p><strong>Period From:</strong> {formatDate(consumption?.periodFrom)}</p>
-          <p><strong>Period To:</strong> {formatDate(consumption?.periodTo)}</p>
-          <p><strong>Total kWh:</strong> {totalKwh}</p>
-          <p><strong>Avg kWh/day:</strong> {typeof consumption?.avgKwhPerDay === "number" ? consumption.avgKwhPerDay : "N/A"}</p>
-          <p><strong>Number of Days:</strong> {typeof consumption?.numDays === "number" ? consumption.numDays : "N/A"}</p>
-        </div>
-
-        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
           <div>
-            <h3 className="font-semibold text-lg mb-1">Tariff Breakdown</h3>
-            {tariffs.length > 0 ? (
-              <ul className="list-disc ml-6">
-                {tariffs.map((t) => (
-                  <li key={t.tariffID}>
-                    {t.tariffType}: ₱{formatRate(t?.ratePerKwh ?? t?.rate)}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500">No tariff data available.</p>
-            )}
+            <h3 className="font-semibold text-lg mb-1">Consumption Details</h3>
+            <p><strong>Period From:</strong> {formatDate(consumption?.periodFrom)}</p>
+            <p><strong>Period To:</strong> {formatDate(consumption?.periodTo)}</p>
+            <p><strong>Total kWh:</strong> {totalKwh}</p>
+            <p><strong>Avg kWh/day:</strong> {typeof consumption?.avgKwhPerDay === "number" ? consumption.avgKwhPerDay : "N/A"}</p>
+            <p><strong>Number of Days:</strong> {typeof consumption?.numDays === "number" ? consumption.numDays : "N/A"}</p>
+            <p>Reading Date: {formatDate(consumption?.readingDate)}</p>
           </div>
 
-          <div>
-            <h3 className="font-semibold text-lg mb-1">Charge Breakdown</h3>
-            {charges.length > 0 ? (
-              <ul className="list-disc ml-6">
-                {charges.map((c) => (
-                  <li key={c.chargeId}>
-                    {c.chargeType}: ₱{formatRate(c.ratePerKwh)}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500">No charge data available.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="border-t pt-4">
-          <p><strong>Bill Date:</strong> {formatDate(bill.billDate)}</p>
-          <p><strong>Due Date:</strong> {formatDate(bill.dueDate)}</p>
-          <p><strong>Created At:</strong> {formatDate(bill.createdAt, true)}</p>
-          <p><strong>Status:</strong> <span className={
-            bill.status === "PAID" ? "text-green-600" :
-            bill.status === "PENDING" ? "text-yellow-600" : "text-red-600"
-          }>{bill.status}</span></p>
-          <p className="text-xl font-bold mt-2">Total Amount: ₱{bill.totalAmount.toFixed(2)}</p>
-          <p className="text-lg mt-1">Amount Paid: ₱{totalPaid.toFixed(2)}</p>
-          <p className="text-lg mt-1">Remaining Balance: ₱{remainingBalance.toFixed(2)}</p>
-        </div>
-
-        {payments.length > 0 && (
-          <div className="border-t pt-4">
-            <h3 className="font-semibold text-lg mb-2">Payment History</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="text-gray-600 bg-gray-100">
-                  <tr>
-                    <th className="py-2 px-4">Date</th>
-                    <th className="py-2 px-4">Method</th>
-                    <th className="py-2 px-4">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map((payment) => (
-                    <tr key={payment.paymentId} className="border-b">
-                      <td className="py-2 px-4">{formatDate(payment.paymentDate)}</td>
-                      <td className="py-2 px-4">{payment.paymentMethod}</td>
-                      <td className="py-2 px-4">₱{payment.amountPaid.toFixed(2)}</td>
-                    </tr>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div>
+              <h3 className="font-semibold text-lg mb-1">Tariff Breakdown</h3>
+              {tariffs.length > 0 ? (
+                <ul className="list-disc ml-6">
+                  {tariffs.map((t) => (
+                    <li key={t.tariffID}>
+                      {t.tariffType}: ₱{formatRate(t?.ratePerKwh ?? t?.rate)}
+                    </li>
                   ))}
-                </tbody>
-              </table>
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">No tariff data available.</p>
+              )}
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-lg mb-1">Charge Breakdown</h3>
+              {charges.length > 0 ? (
+                <ul className="list-disc ml-6">
+                  {charges.map((c) => (
+                    <li key={c.chargeId}>
+                      {c.chargeType}: ₱{formatRate(c.ratePerKwh)}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">No charge data available.</p>
+              )}
             </div>
           </div>
+
+          <div className="border-t pt-4">
+            <p><strong>Bill Date:</strong> {formatDate(bill.billDate)}</p>
+            <p><strong>Due Date:</strong> {formatDate(bill.dueDate)}</p>
+            <p><strong>Created At:</strong> {formatDate(bill.createdAt, true)}</p>
+            <p><strong>Status:</strong> <span className={
+              billStatus === "PAID" ? "text-green-600" :
+              billStatus === "PENDING" ? "text-yellow-600" : "text-red-600"
+            }>{billStatus}</span></p>
+            <p className="text-xl font-bold mt-2">Total Amount: ₱{bill.totalAmount.toFixed(2)}</p>
+            <p className="text-lg mt-1">Amount Paid: ₱{totalPaid.toFixed(2)}</p>
+            <p className="text-lg mt-1">Remaining Balance: ₱{remainingBalance.toFixed(2)}</p>
+          </div>
+
+          {remainingBalance > 0 && (
+            <div className="mt-6">
+              <button
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
+                onClick={() => setShowPayModal(true)}
+              >
+                Pay Now
+              </button>
+            </div>
+          )}
+
+          {remainingBalance <= 0 && (
+            <div className="mt-6">
+              <button
+                className="bg-gray-400 text-white px-6 py-2 rounded cursor-not-allowed"
+                disabled
+              >
+                PAID
+              </button>
+            </div>
+          )}
+        </div>
+
+        {showPayModal && (
+          <PayNowModal
+            bill={bill}
+            onClose={() => setShowPayModal(false)}
+            onSubmit={handlePayNow}
+          />
         )}
       </div>
     </div>

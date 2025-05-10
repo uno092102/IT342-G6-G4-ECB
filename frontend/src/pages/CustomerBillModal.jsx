@@ -2,29 +2,35 @@ import React, { useState, useEffect } from "react";
 import api from "../api/apiConfig";
 import { normalizeArrayResponse } from '../utils/normalize';
 
-import PayNowModal from "./PayNowModal";
-
 const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay }) => {
-  const [showPayModal, setShowPayModal] = useState(false);
-  const [payments, setPayments] = useState([]);
   const [totalPaid, setTotalPaid] = useState(0);
   const [remainingBalance, setRemainingBalance] = useState(bill.totalAmount);
+  const [billStatus, setBillStatus] = useState(bill.status);
 
   useEffect(() => {
     const fetchPayments = async () => {
       try {
         const res = await api.get(`/payments/bill/${bill.billId}`);
         const paymentList = Array.isArray(res.data) ? res.data : [];
-        setPayments(paymentList);
         const totalPaidAmount = paymentList.reduce((sum, p) => sum + p.amountPaid, 0);
         setTotalPaid(totalPaidAmount);
-        setRemainingBalance(bill.totalAmount - totalPaidAmount);
+        const remaining = bill.totalAmount - totalPaidAmount;
+        setRemainingBalance(remaining);
+        
+        // Update bill status based on remaining balance
+        if (remaining <= 0) {
+          setBillStatus("PAID");
+        } else if (totalPaidAmount > 0) {
+          setBillStatus("PENDING");
+        } else {
+          setBillStatus("UNPAID");
+        }
       } catch (err) {
         console.error("Error fetching payments:", err);
       }
     };
     fetchPayments();
-  }, [bill.billId, bill.totalAmount]);
+  }, [bill.billId, bill.totalAmount, bill.status]);
 
   const consumption = bill.consumption ?? null;
   const totalKwh = typeof consumption?.totalKwh === "number" ? consumption.totalKwh : "N/A";
@@ -115,52 +121,26 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
             <p><strong>Due Date:</strong> {formatDate(bill.dueDate)}</p>
             <p><strong>Created At:</strong> {formatDate(bill.createdAt, true)}</p>
             <p><strong>Status:</strong> <span className={
-              bill.status === "PAID" ? "text-green-600" :
-              bill.status === "Pending" ? "text-yellow-600" : "text-red-600"
-            }>{bill.status}</span></p>
+              billStatus === "PAID" ? "text-green-600" :
+              billStatus === "PENDING" ? "text-yellow-600" : "text-red-600"
+            }>{billStatus}</span></p>
             <p className="text-xl font-bold mt-2">Total Amount: ₱{bill.totalAmount.toFixed(2)}</p>
             <p className="text-lg mt-1">Amount Paid: ₱{totalPaid.toFixed(2)}</p>
             <p className="text-lg mt-1">Remaining Balance: ₱{remainingBalance.toFixed(2)}</p>
           </div>
 
-          {payments.length > 0 && (
-            <div className="border-t pt-4">
-              <h3 className="font-semibold text-lg mb-2">Payment History</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="text-gray-600 bg-gray-100">
-                    <tr>
-                      <th className="py-2 px-4">Date</th>
-                      <th className="py-2 px-4">Method</th>
-                      <th className="py-2 px-4">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payments.map((payment) => (
-                      <tr key={payment.paymentId} className="border-b">
-                        <td className="py-2 px-4">{formatDate(payment.paymentDate)}</td>
-                        <td className="py-2 px-4">{payment.paymentMethod}</td>
-                        <td className="py-2 px-4">₱{payment.amountPaid.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
           {remainingBalance > 0 && (
             <div className="mt-6">
               <button
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded"
-                onClick={() => setShowPayModal(true)}
+                onClick={onPay}
               >
                 Pay Now
               </button>
             </div>
           )}
 
-          {(bill.status === "PAID" || totalPaid > 0) && (
+          {remainingBalance <= 0 && (
             <div className="mt-6">
               <button
                 className="bg-gray-400 text-white px-6 py-2 rounded cursor-not-allowed"
@@ -171,20 +151,6 @@ const CustomerBillModal = ({ bill, tariffs = [], charges = [], onClose, onPay })
             </div>
           )}
         </div>
-
-        {showPayModal && (
-          <PayNowModal
-            bill={bill}
-            onClose={() => setShowPayModal(false)}
-            onSubmit={(billId, amountPaid, method) => {
-              onPay(billId, amountPaid, method, (payment) => {
-                setPayments([...payments, payment]);
-                setShowPayModal(false);
-                bill.status = "PAID";
-              });
-            }}
-          />
-        )}
       </div>
     </div>
   );

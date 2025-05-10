@@ -25,7 +25,7 @@ const PayNowModal = ({ bill, onClose, onSubmit }) => {
     fetchPayments();
   }, [bill.billId, bill.totalAmount]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
       if (!amountPaid || amountPaid <= 0) {
         setError("Please enter a valid amount.");
@@ -46,7 +46,8 @@ const PayNowModal = ({ bill, onClose, onSubmit }) => {
         remainingBalance
       });
       
-      onSubmit(bill.billId, roundedAmount, paymentMethod);
+      await onSubmit(bill.billId, roundedAmount, paymentMethod);
+      onClose(); // Close the modal after successful payment
     } catch (err) {
       console.error("Payment submission error:", err);
       setError("Error processing payment. Please try again.");
