@@ -104,4 +104,8 @@ public class PaymentService {
     public PaymentEntity save(PaymentEntity payment) {
         return prepo.save(payment);
     }
+
+    public List<PaymentEntity> getPaymentRecordsByBill(int billId) {
+        return prepo.findByBill_BillId(billId);
+    }
 }

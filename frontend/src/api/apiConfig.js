@@ -3,9 +3,12 @@ import axios from 'axios';
 
 // Create Axios instance
 const api = axios.create({
-  //baseURL: 'http://localhost:8080',
   baseURL: process.env.REACT_APP_API_BASE || 'http://localhost:8080',
-  withCredentials: true, // In case you also want to send cookies
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
 });
 
 // Add a request interceptor to attach the JWT token
@@ -17,7 +20,6 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (response) => response,
   (error) => {
     console.error("API Error:", error.response?.data || error.message);
     return Promise.reject(error);

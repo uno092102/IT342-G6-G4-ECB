@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaUsers, FaMoneyBillWave, FaUserCheck, FaUser } from "react-icons/fa";
+import { FaUsers, FaMoneyBillWave, FaUserCheck, FaUser, FaBolt } from "react-icons/fa";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import api from "../api/apiConfig";
 
