@@ -1,7 +1,7 @@
 // pages/CustomerProfile.jsx
 import React, { useEffect, useState } from "react";
 import { normalizeArrayResponse } from '../utils/normalize';
-import { FaUser } from "react-icons/fa";
+
 import api from "../api/apiConfig";
 
 const CustomerProfile = () => {
@@ -15,19 +15,13 @@ const CustomerProfile = () => {
     password: ""
   });
   const [image, setImage] = useState(null);
-  const [profileImage, setProfileImage] = useState(null);
   const [message, setMessage] = useState({ text: "", type: "" });
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await api.get("/customer/profile", {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const res = await api.get("/customer/profile");
         setForm({
           fname: res.data.fname || "",
           lname: res.data.lname || "",
@@ -36,23 +30,6 @@ const CustomerProfile = () => {
           address: res.data.address || "",
           password: ""
         });
-        
-        // Fetch profile image
-        if (res.data.accountId) {
-          try {
-            const imageRes = await api.get(`/customer/profile/image/${res.data.accountId}`, {
-              responseType: 'blob',
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            if (imageRes.data && imageRes.data.size > 0) {
-              setProfileImage(URL.createObjectURL(imageRes.data));
-            }
-          } catch (err) {
-            console.log("No profile image found or error loading image");
-          }
-        }
       } catch (err) {
         setMessage({ 
           text: "Failed to load profile. Please try again later.", 
@@ -105,33 +82,20 @@ const CustomerProfile = () => {
     
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const updateData = { ...form };
       if (!updateData.password) {
         delete updateData.password;
       }
       
-      const response = await api.put(`/customer/profile/edit/${user.accountId}`, updateData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      await api.put(`/customer/profile/edit/${user.accountId}`, updateData);
+      setMessage({ 
+        text: "Profile updated successfully!", 
+        type: "success" 
       });
-      
-      if (response.data) {
-        setMessage({ 
-          text: "Profile updated successfully!", 
-          type: "success" 
-        });
-        setForm(prev => ({ ...prev, password: "" }));
-        
-        // Update local storage with new user data
-        const updatedUser = { ...user, ...updateData };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-      }
+      setForm(prev => ({ ...prev, password: "" }));
     } catch (err) {
       setMessage({ 
-        text: err.response?.data?.message || "Failed to update profile. Please try again.", 
+        text: err.response?.data?.message || "Failed to update profile", 
         type: "error" 
       });
       console.error("Update error:", err);
@@ -150,44 +114,20 @@ const CustomerProfile = () => {
     }
 
     setIsLoading(true);
-    const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("accountId", user.accountId);
     formData.append("ownerImage", image);
     
     try {
-      const response = await api.post("/customer/profile/uploadimage", formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      await api.post("/customer/profile/uploadimage", formData);
+      setMessage({ 
+        text: "Profile image uploaded successfully!", 
+        type: "success" 
       });
-      
-      if (response.data) {
-        setMessage({ 
-          text: "Profile image uploaded successfully!", 
-          type: "success" 
-        });
-        setImage(null);
-        
-        // Refresh profile image
-        try {
-          const imageRes = await api.get(`/customer/profile/image/${user.accountId}`, {
-            responseType: 'blob',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          if (imageRes.data && imageRes.data.size > 0) {
-            setProfileImage(URL.createObjectURL(imageRes.data));
-          }
-        } catch (imageErr) {
-          console.error("Error refreshing profile image:", imageErr);
-        }
-      }
+      setImage(null);
     } catch (err) {
       setMessage({ 
-        text: err.response?.data?.message || "Failed to upload image. Please try again.", 
+        text: err.response?.data?.message || "Failed to upload image", 
         type: "error" 
       });
       console.error("Upload error:", err);
@@ -199,41 +139,6 @@ const CustomerProfile = () => {
   return (
     <div className="bg-white shadow rounded-lg p-6 space-y-6">
       <h2 className="text-xl font-bold">My Profile</h2>
-
-      {/* Profile Image Section */}
-      <div className="flex flex-col items-center space-y-4">
-        <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-          {profileImage ? (
-            <img 
-              src={profileImage} 
-              alt="Profile" 
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <FaUser className="w-16 h-16 text-gray-400" />
-          )}
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <input 
-            type="file" 
-            onChange={handleImageChange}
-            accept="image/*"
-            className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-full file:border-0
-              file:text-sm file:font-semibold
-              file:bg-indigo-50 file:text-indigo-700
-              hover:file:bg-indigo-100"
-          />
-          <button 
-            onClick={handleUpload} 
-            disabled={isLoading}
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {isLoading ? "Uploading..." : "Upload Image"}
-          </button>
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <input 
@@ -279,6 +184,27 @@ const CustomerProfile = () => {
           value={form.password} 
           onChange={handleChange} 
         />
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4 items-start">
+        <input 
+          type="file" 
+          onChange={handleImageChange}
+          accept="image/*"
+          className="block w-full text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-full file:border-0
+            file:text-sm file:font-semibold
+            file:bg-indigo-50 file:text-indigo-700
+            hover:file:bg-indigo-100"
+        />
+        <button 
+          onClick={handleUpload} 
+          disabled={isLoading}
+          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {isLoading ? "Uploading..." : "Upload Image"}
+        </button>
       </div>
 
       <button 
