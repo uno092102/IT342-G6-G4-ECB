@@ -16,7 +16,7 @@ public class CorsConfig {
                 registry.addMapping("/**")
                     .allowedOrigins("http://localhost:3000", "https://ecbfrontend.netlify.app")
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                    .allowedHeaders("Authorization", "Content-Type", "Accept", "X-Requested-With")
+                    .allowedHeaders("*")
                     .exposedHeaders("Authorization")
                     .allowCredentials(true)
                     .maxAge(3600);
