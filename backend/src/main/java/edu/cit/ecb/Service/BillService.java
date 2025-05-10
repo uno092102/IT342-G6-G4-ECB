@@ -1,5 +1,7 @@
 package edu.cit.ecb.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
@@ -58,7 +60,9 @@ public class BillService {
         List<ChargeEntity> charges = chargeRepo.findAll();
         List<TariffEntity> tariffs = trepo.findAll();
         double finalBillAmount = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
-        bill.setTotalAmount((float) finalBillAmount);
+        BigDecimal rounded = new BigDecimal(finalBillAmount).setScale(2, RoundingMode.HALF_UP);
+        bill.setTotalAmount((float) rounded.doubleValue());  // ✅ Save as rounded
+
     
         if (bill.getStatus() == null || bill.getStatus().trim().isEmpty()) {
             bill.setStatus("UNPAID");
@@ -117,8 +121,10 @@ public class BillService {
         List<TariffEntity> tariffs = trepo.findAll();
         List<ChargeEntity> charges = chargeRepo.findAll();
 
-        double total = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
-        bill.setTotalAmount((float) total);
+        double finalBillAmount = ChargeCalculationUtility.calculateFinalBill(consumption, charges, tariffs);
+        BigDecimal rounded = new BigDecimal(finalBillAmount).setScale(2, RoundingMode.HALF_UP);
+        bill.setTotalAmount((float) rounded.doubleValue());  // ✅ Save as rounded
+
     }
 
     public BillEntity save(BillEntity bill) {

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Map;
 import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -64,6 +66,10 @@ public class PaymentController {
             double amountPaid = ((Number) paymentRequest.get("amountPaid")).doubleValue();
             String paymentMethod = (String) paymentRequest.get("paymentMethod");
 
+            // Round the amount to 2 decimal places
+            BigDecimal roundedAmount = new BigDecimal(amountPaid).setScale(2, RoundingMode.HALF_UP);
+            amountPaid = roundedAmount.doubleValue();
+
             BillEntity bill = billService.findBillById(billId);
             if (bill == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bill not found.");
@@ -85,10 +91,11 @@ public class PaymentController {
             payment.setPaymentDate(new Date(System.currentTimeMillis()));
 
             PaymentEntity saved = pserv.addPayment(payment);
+            System.out.println("Bill Amount in DB: " + bill.getTotalAmount());
+            System.out.println("Amount Paid: " + amountPaid);
             return ResponseEntity.ok(saved);
 
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error processing payment: " + e.getMessage());
         }
