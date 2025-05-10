@@ -1,10 +1,33 @@
 import React, { useState } from "react";
 import { normalizeArrayResponse } from '../utils/normalize';
 
-
 const PayNowModal = ({ bill, onClose, onSubmit }) => {
   const [paymentMethod, setPaymentMethod] = useState("GCash");
-  const [amountPaid, setAmountPaid] = useState(bill.totalAmount || 0);
+  const [amountPaid, setAmountPaid] = useState(bill.totalAmount ? Number(bill.totalAmount.toFixed(2)) : 0);
+  const [error, setError] = useState("");
+
+  const handleSubmit = () => {
+    try {
+      if (!amountPaid || amountPaid <= 0) {
+        setError("Please enter a valid amount.");
+        return;
+      }
+
+      // Round to 2 decimal places before submitting
+      const roundedAmount = Number(amountPaid.toFixed(2));
+      console.log("Submitting payment:", {
+        billId: bill.billId,
+        amountPaid: roundedAmount,
+        paymentMethod,
+        originalAmount: bill.totalAmount
+      });
+      
+      onSubmit(bill.billId, roundedAmount, paymentMethod);
+    } catch (err) {
+      console.error("Payment submission error:", err);
+      setError("Error processing payment. Please try again.");
+    }
+  };
 
   return (
     <div
@@ -41,17 +64,25 @@ const PayNowModal = ({ bill, onClose, onSubmit }) => {
             <label className="block mb-1 font-medium">Amount to Pay</label>
             <input
               type="number"
+              step="0.01"
               className="w-full border px-4 py-2 rounded"
               value={amountPaid}
-              onChange={(e) => setAmountPaid(parseFloat(e.target.value))}
+              onChange={(e) => setAmountPaid(Number(e.target.value))}
               min={0}
               max={bill.totalAmount}
             />
+            <p className="text-sm text-gray-500 mt-1">
+              Bill Amount: ₱{bill.totalAmount.toFixed(2)}
+            </p>
           </div>
+
+          {error && (
+            <p className="text-red-500 text-sm">{error}</p>
+          )}
 
           <button
             className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-            onClick={() => onSubmit(bill.billId, amountPaid, paymentMethod)}
+            onClick={handleSubmit}
           >
             Confirm Payment
           </button>

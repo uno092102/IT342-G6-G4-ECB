@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../api/apiConfig";
 import CustomerBillModal from "./CustomerBillModal";
 import PaymentReceiptModal from "./PaymentReceiptModal";
+import PayNowModal from "./PayNowModal";
 
 const CustomerBills = () => {
   const [bills, setBills] = useState([]);
@@ -9,25 +10,32 @@ const CustomerBills = () => {
   const [tariffs, setTariffs] = useState([]);
   const [charges, setCharges] = useState([]);
   const [receipt, setReceipt] = useState(null);
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [error, setError] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user"));
 
   const fetchBills = async () => {
-    const res = await api.get(`/bills/customer/${user.accountId}`);
-    const rawBills = Array.isArray(res.data)
-      ? res.data
-      : res.data?.data && Array.isArray(res.data.data)
-      ? res.data.data
-      : [];
+    try {
+      const res = await api.get(`/bills/customer/${user.accountId}`);
+      const rawBills = Array.isArray(res.data)
+        ? res.data
+        : res.data?.data && Array.isArray(res.data.data)
+        ? res.data.data
+        : [];
 
-    const sortedBills = rawBills
-      .map(b => ({
-        ...b,
-        status: b.status?.toUpperCase() || "UNPAID" // Default to "UNPAID" if status is missing
-      }))
-      .sort((a, b) => new Date(b.billDate) - new Date(a.billDate));
+      const sortedBills = rawBills
+        .map(b => ({
+          ...b,
+          status: b.status?.toUpperCase() || "UNPAID"
+        }))
+        .sort((a, b) => new Date(b.billDate) - new Date(a.billDate));
 
-    setBills(sortedBills);
+      setBills(sortedBills);
+    } catch (error) {
+      console.error("Error fetching bills:", error);
+      setError("Failed to load bills. Please try again.");
+    }
   };
 
   useEffect(() => {
@@ -57,6 +65,7 @@ const CustomerBills = () => {
         setCharges(chargesRes.data);
       } catch (error) {
         console.error("Error fetching customer bills:", error);
+        setError("Failed to load data. Please try again.");
       }
     };
 
@@ -69,44 +78,51 @@ const CustomerBills = () => {
       if (res.data?.consumption) {
         setSelectedBill(res.data);
       } else {
-        alert("This bill doesn't include consumption details.");
+        setError("This bill doesn't include consumption details.");
       }
     } catch (err) {
       console.error("Failed to fetch full bill:", err);
+      setError("Failed to load bill details. Please try again.");
     }
   };
 
   const handleCloseModal = () => {
     setSelectedBill(null);
+    setError("");
   };
 
-  const handlePayNow = async (billId, amountPaid, paymentMethod, callback) => {
-    if (!amountPaid || amountPaid <= 0) {
-      return alert("Please enter a valid amount.");
-    }
-
+  const handlePayNow = async (billId, amountPaid, paymentMethod) => {
     try {
+      console.log("Processing payment:", { billId, amountPaid, paymentMethod });
+      
       const res = await api.post("/payments/add", {
         billId,
         amountPaid,
         paymentMethod,
       });
 
-      alert("Payment successful!");
-      await fetchBills(); // Refresh bills to get the updated status
-      setSelectedBill(null);
-      setReceipt(res.data);
+      console.log("Payment response:", res.data);
 
-      if (callback) callback(res.data);
+      await fetchBills(); // Refresh bills to get the updated status
+      setShowPayModal(false);
+      setReceipt(res.data);
+      setError("");
     } catch (error) {
       console.error("Payment failed:", error);
-      alert("Payment failed. Please try again.");
+      setError(error.response?.data || "Payment failed. Please try again.");
     }
   };
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold mb-4">My Bills</h2>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="text-gray-600 bg-gray-100">
@@ -116,6 +132,7 @@ const CustomerBills = () => {
               <th className="py-2 px-4">Due Date</th>
               <th className="py-2 px-4">Total Amount</th>
               <th className="py-2 px-4">Status</th>
+              <th className="py-2 px-4">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -123,23 +140,35 @@ const CustomerBills = () => {
               bills.map((bill) => (
                 <tr
                   key={bill.billId}
-                  className="border-b hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleRowClick(bill)}
+                  className="border-b hover:bg-gray-50"
                 >
-                  <td className="py-2 px-4">{bill.billId}</td>
-                  <td className="py-2 px-4">{bill.billDate}</td>
-                  <td className="py-2 px-4">{bill.dueDate}</td>
-                  <td className="py-2 px-4">₱{bill.totalAmount.toFixed(2)}</td>
+                  <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>{bill.billId}</td>
+                  <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>{bill.billDate}</td>
+                  <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>{bill.dueDate}</td>
+                  <td className="py-2 px-4 cursor-pointer" onClick={() => handleRowClick(bill)}>₱{bill.totalAmount.toFixed(2)}</td>
                   <td className="py-2 px-4 font-medium">
                     {bill.status === "PAID" && <span className="text-green-600">PAID</span>}
                     {bill.status === "PENDING" && <span className="text-yellow-500">PENDING</span>}
                     {bill.status === "UNPAID" && <span className="text-red-500">UNPAID</span>}
-                  </td>   
+                  </td>
+                  <td className="py-2 px-4">
+                    {bill.status !== "PAID" && (
+                      <button
+                        onClick={() => {
+                          setSelectedBill(bill);
+                          setShowPayModal(true);
+                        }}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Pay Now
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-4 text-center text-gray-500">
+                <td colSpan={6} className="py-4 text-center text-gray-500">
                   No bills found.
                 </td>
               </tr>
@@ -148,13 +177,25 @@ const CustomerBills = () => {
         </table>
       </div>
 
-      {selectedBill && (
+      {selectedBill && showPayModal && (
+        <PayNowModal
+          bill={selectedBill}
+          onClose={() => {
+            setShowPayModal(false);
+            setSelectedBill(null);
+            setError("");
+          }}
+          onSubmit={handlePayNow}
+        />
+      )}
+
+      {selectedBill && !showPayModal && (
         <CustomerBillModal
           bill={selectedBill}
           tariffs={tariffs}
           charges={charges}
           onClose={handleCloseModal}
-          onPay={handlePayNow}
+          onPay={() => setShowPayModal(true)}
         />
       )}
 

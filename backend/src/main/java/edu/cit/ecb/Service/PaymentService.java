@@ -4,6 +4,8 @@ import java.sql.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,31 +65,39 @@ public class PaymentService {
     
     
     public PaymentEntity addPayment(PaymentEntity paymentRequest) {
-        BillEntity bill = brepo.findById(paymentRequest.getBill().getBillId())
-            .orElseThrow(() -> new RuntimeException("Bill not found"));
+        try {
+            BillEntity bill = brepo.findById(paymentRequest.getBill().getBillId())
+                .orElseThrow(() -> new RuntimeException("Bill not found"));
 
-        double totalAmount = bill.getTotalAmount();
-        double amountToPay = paymentRequest.getAmountPaid();
+            double totalAmount = bill.getTotalAmount();
+            double amountToPay = paymentRequest.getAmountPaid();
 
-        // ✅ Reject any payment that is not exactly equal to the total amount
-        if (Double.compare(amountToPay, totalAmount) != 0) {
-            throw new IllegalArgumentException("Please pay the exact bill amount: ₱" + totalAmount);
+            // Round both amounts to 2 decimal places for comparison
+            BigDecimal billAmount = new BigDecimal(totalAmount).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal paymentAmount = new BigDecimal(amountToPay).setScale(2, RoundingMode.HALF_UP);
+
+            // Compare the rounded amounts
+            if (billAmount.compareTo(paymentAmount) != 0) {
+                throw new IllegalArgumentException("Please pay the exact bill amount: ₱" + billAmount);
+            }
+
+            // Create payment entry
+            PaymentEntity payment = new PaymentEntity();
+            payment.setPaymentDate(new Date(System.currentTimeMillis()));
+            payment.setPaymentMethod(paymentRequest.getPaymentMethod());
+            payment.setAmountPaid(amountToPay);
+            payment.setCustomer(paymentRequest.getCustomer());
+            payment.setBill(bill);
+
+            // Save payment and update bill status to PAID
+            PaymentEntity saved = prepo.save(payment);
+            bill.setStatus("PAID");
+            brepo.save(bill);
+
+            return saved;
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing payment: " + e.getMessage());
         }
-
-        // Create payment entry
-        PaymentEntity payment = new PaymentEntity();
-        payment.setPaymentDate(paymentRequest.getPaymentDate());
-        payment.setPaymentMethod(paymentRequest.getPaymentMethod());
-        payment.setAmountPaid(amountToPay);
-        payment.setCustomer(paymentRequest.getCustomer());
-        payment.setBill(bill);
-
-        // Save payment and update bill status to PAID
-        PaymentEntity saved = prepo.save(payment);
-        bill.setStatus("PAID");
-        brepo.save(bill);
-
-        return saved;
     }
 
     public PaymentEntity save(PaymentEntity payment) {
