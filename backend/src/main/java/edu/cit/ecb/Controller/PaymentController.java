@@ -23,7 +23,7 @@ import edu.cit.ecb.Service.BillService;
 import edu.cit.ecb.Service.PaymentService;
 import edu.cit.ecb.Service.UserService;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "https://ecbfrontend.netlify.app"}, allowCredentials = "true")
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
@@ -56,6 +56,12 @@ public class PaymentController {
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<PaymentEntity>> getPaymentsByCustomer(@PathVariable int customerId) {
         List<PaymentEntity> payments = pserv.getPaymentRecordsByCustomer(customerId);
+        return ResponseEntity.ok(payments != null ? payments : new ArrayList<>());
+    }
+
+    @GetMapping("/bill/{billId}")
+    public ResponseEntity<List<PaymentEntity>> getPaymentsByBill(@PathVariable int billId) {
+        List<PaymentEntity> payments = pserv.getPaymentRecordsByBill(billId);
         return ResponseEntity.ok(payments != null ? payments : new ArrayList<>());
     }
 
