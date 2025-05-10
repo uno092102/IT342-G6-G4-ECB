@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { FaUsers, FaMoneyBillWave, FaUserCheck, FaUser, FaBolt } from "react-icons/fa";
+import { FaUsers, FaMoneyBillWave, FaFileInvoice, FaUser, FaBolt } from "react-icons/fa";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
+import { useNavigate } from "react-router-dom";
 import api from "../api/apiConfig";
 
 const COLORS = ["#5a50e5", "#7cd4fd"];
@@ -9,9 +10,11 @@ const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalPayments, setTotalPayments] = useState(0);
   const [totalConsumption, setTotalConsumption] = useState(0);
+  const [unpaidBillsCount, setUnpaidBillsCount] = useState(0);
   const [paymentStatusData, setPaymentStatusData] = useState([]);
   const [consumptionChart, setConsumptionChart] = useState([]);
   const [recentPayments, setRecentPayments] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +33,9 @@ const AdminDashboard = () => {
 
         const totalKwh = consumptionRes.data.reduce((sum, c) => sum + (c.totalKwh || 0), 0);
         setTotalConsumption(totalKwh);
+
+        const unpaidBills = billsRes.data.filter(b => b.status === "UNPAID" || b.status === "PENDING").length;
+        setUnpaidBillsCount(unpaidBills);
 
         const paid = billsRes.data.filter(b => b.status === "PAID").length;
         const pending = billsRes.data.filter(b => b.status === "PENDING").length;
@@ -55,11 +61,9 @@ const AdminDashboard = () => {
           .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
           .slice(0, 5)
           .map(p => ({
-            name: p.customer?.fname && p.customer?.lname 
-              ? `${p.customer.fname} ${p.customer.lname}`
-              : "Unknown Customer",
+            name: p.customerName || "Unknown Customer",
             amount: `₱${p.amountPaid.toFixed(2)}`,
-            time: new Date(p.paymentDate).toLocaleTimeString(),
+            date: new Date(p.paymentDate).toLocaleDateString(),
           }));
 
         setRecentPayments(latest);
@@ -99,10 +103,10 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div className="bg-white shadow rounded-lg p-4 flex items-center gap-4">
-          <FaUserCheck className="text-indigo-600 text-xl" />
+          <FaFileInvoice className="text-indigo-600 text-xl" />
           <div>
-            <p className="text-sm text-gray-500">Active Customers</p>
-            <p className="text-lg font-bold">{totalUsers}</p>
+            <p className="text-sm text-gray-500">Unpaid Bills</p>
+            <p className="text-lg font-bold">{unpaidBillsCount}</p>
           </div>
         </div>
       </div>
@@ -153,7 +157,15 @@ const AdminDashboard = () => {
 
       {/* Recent Payments */}
       <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Recent Payments</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Recent Payments</h3>
+          <button 
+            onClick={() => navigate('/admin/payments')}
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+          >
+            See All
+          </button>
+        </div>
         <div className="space-y-4">
           {recentPayments.map((payment, index) => (
             <div key={index} className="flex items-center justify-between border-b pb-4">
@@ -163,7 +175,7 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <p className="font-medium">{payment.name}</p>
-                  <p className="text-sm text-gray-500">{payment.time}</p>
+                  <p className="text-sm text-gray-500">{payment.date}</p>
                 </div>
               </div>
               <p className="font-semibold text-green-600">{payment.amount}</p>

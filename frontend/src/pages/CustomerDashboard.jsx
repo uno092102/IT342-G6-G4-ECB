@@ -60,7 +60,6 @@ const CustomerDashboard = () => {
         );
         setRecentBill(sortedBills[0]);
 
-        // Monthly Payments
         const paymentsByMonth = {};
         payments.forEach((p) => {
           const month = new Date(p.paymentDate).toLocaleString("default", {
@@ -134,43 +133,6 @@ const CustomerDashboard = () => {
         </div>
       </div>
 
-      {/* Unpaid Bills */}
-      {unpaidBills.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Unpaid Bills</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-gray-600 bg-gray-100">
-                <tr>
-                  <th className="py-2 px-4">Bill ID</th>
-                  <th className="py-2 px-4">Bill Date</th>
-                  <th className="py-2 px-4">Due Date</th>
-                  <th className="py-2 px-4">Amount</th>
-                  <th className="py-2 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {unpaidBills.map((bill) => (
-                  <tr key={bill.billId} className="border-b">
-                    <td className="py-2 px-4">{bill.billId}</td>
-                    <td className="py-2 px-4">{new Date(bill.billDate).toLocaleDateString()}</td>
-                    <td className="py-2 px-4">{new Date(bill.dueDate).toLocaleDateString()}</td>
-                    <td className="py-2 px-4">₱{bill.totalAmount.toFixed(2)}</td>
-                    <td className="py-2 px-4">
-                      <span className={
-                        bill.status === "PENDING" ? "text-yellow-500" : "text-red-500"
-                      }>
-                        {bill.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       {/* CHARTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white shadow rounded-lg p-6">
@@ -207,6 +169,43 @@ const CustomerDashboard = () => {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Unpaid Bills */}
+      {unpaidBills.length > 0 && (
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Unpaid Bills</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-gray-600 bg-gray-100">
+                <tr>
+                  <th className="py-2 px-4">Bill ID</th>
+                  <th className="py-2 px-4">Bill Date</th>
+                  <th className="py-2 px-4">Due Date</th>
+                  <th className="py-2 px-4">Amount</th>
+                  <th className="py-2 px-4">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {unpaidBills.map((bill) => (
+                  <tr key={bill.billId} className="border-b">
+                    <td className="py-2 px-4">{bill.billId}</td>
+                    <td className="py-2 px-4">{new Date(bill.billDate).toLocaleDateString()}</td>
+                    <td className="py-2 px-4">{new Date(bill.dueDate).toLocaleDateString()}</td>
+                    <td className="py-2 px-4">₱{bill.totalAmount.toFixed(2)}</td>
+                    <td className="py-2 px-4">
+                      <span className={
+                        bill.status === "PENDING" ? "text-yellow-500" : "text-red-500"
+                      }>
+                        {bill.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </>
   );
 };

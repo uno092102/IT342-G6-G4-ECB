@@ -58,7 +58,6 @@ const PaymentReceiptModal = ({ receipt, onClose }) => {
           </p>
           <p><strong>Date Paid:</strong> {formatDate(receipt.paymentDate)}</p>
           <p><strong>Total Amount Paid:</strong> ₱{totalPaid.toFixed(2)}</p>
-          <p><strong>Remaining Balance:</strong> ₱{remainingBalance.toFixed(2)}</p>
         </div>
 
         <div className="mt-6 text-center">

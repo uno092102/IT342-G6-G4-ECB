@@ -24,11 +24,41 @@ const CustomerBills = () => {
         ? res.data.data
         : [];
 
-      const sortedBills = rawBills
-        .map(b => ({
-          ...b,
-          status: b.status?.toUpperCase() || "UNPAID"
-        }))
+      // Fetch payments for each bill to calculate remaining balance and status
+      const billsWithPayments = await Promise.all(
+        rawBills.map(async (bill) => {
+          try {
+            const paymentsRes = await api.get(`/payments/bill/${bill.billId}`);
+            const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+            const totalPaid = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+            const remainingBalance = bill.totalAmount - totalPaid;
+            
+            let status = "UNPAID";
+            if (remainingBalance <= 0) {
+              status = "PAID";
+            } else if (totalPaid > 0) {
+              status = "PENDING";
+            }
+
+            return {
+              ...bill,
+              status: status,
+              totalPaid,
+              remainingBalance
+            };
+          } catch (err) {
+            console.error(`Error fetching payments for bill ${bill.billId}:`, err);
+            return {
+              ...bill,
+              status: bill.status?.toUpperCase() || "UNPAID",
+              totalPaid: 0,
+              remainingBalance: bill.totalAmount
+            };
+          }
+        })
+      );
+
+      const sortedBills = billsWithPayments
         .sort((a, b) => new Date(b.billDate) - new Date(a.billDate));
 
       setBills(sortedBills);
@@ -41,30 +71,16 @@ const CustomerBills = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [billsRes, tariffsRes, chargesRes] = await Promise.all([
-          api.get(`/bills/customer/${user.accountId}`),
+        const [tariffsRes, chargesRes] = await Promise.all([
           api.get("/tariffs/getAll"),
           api.get("/charges/getAll"),
         ]);
 
-        const rawBills = Array.isArray(billsRes.data)
-          ? billsRes.data
-          : billsRes.data?.data && Array.isArray(billsRes.data.data)
-          ? billsRes.data.data
-          : [];
-
-        const sortedBills = rawBills
-          .map(b => ({
-            ...b,
-            status: b.status?.toUpperCase() || "UNPAID"
-          }))
-          .sort((a, b) => new Date(b.billDate) - new Date(a.billDate));
-
-        setBills(sortedBills);
         setTariffs(tariffsRes.data);
         setCharges(chargesRes.data);
+        await fetchBills();
       } catch (error) {
-        console.error("Error fetching customer bills:", error);
+        console.error("Error fetching data:", error);
         setError("Failed to load data. Please try again.");
       }
     };
@@ -76,7 +92,25 @@ const CustomerBills = () => {
     try {
       const res = await api.get(`/bills/${bill.billId}`);
       if (res.data?.consumption) {
-        setSelectedBill(res.data);
+        // Include payment information in the selected bill
+        const paymentsRes = await api.get(`/payments/bill/${bill.billId}`);
+        const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+        const totalPaid = payments.reduce((sum, p) => sum + p.amountPaid, 0);
+        const remainingBalance = res.data.totalAmount - totalPaid;
+        
+        let status = "UNPAID";
+        if (remainingBalance <= 0) {
+          status = "PAID";
+        } else if (totalPaid > 0) {
+          status = "PENDING";
+        }
+
+        setSelectedBill({
+          ...res.data,
+          status,
+          totalPaid,
+          remainingBalance
+        });
       } else {
         setError("This bill doesn't include consumption details.");
       }
@@ -91,20 +125,22 @@ const CustomerBills = () => {
     setError("");
   };
 
-  const handlePayNow = async (billId, amountPaid, paymentMethod) => {
+  const handlePayNow = async (billId, amountPaid, paymentMethod, paymentDate) => {
     try {
-      console.log("Processing payment:", { billId, amountPaid, paymentMethod });
+      console.log("Processing payment:", { billId, amountPaid, paymentMethod, paymentDate });
       
       const res = await api.post("/payments/add", {
         billId,
         amountPaid,
         paymentMethod,
+        paymentDate,
       });
 
       console.log("Payment response:", res.data);
 
       await fetchBills(); // Refresh bills to get the updated status
       setShowPayModal(false);
+      setSelectedBill(null); // Close the bill modal
       setReceipt(res.data);
       setError("");
     } catch (error) {
@@ -163,7 +199,17 @@ const CustomerBills = () => {
         </table>
       </div>
 
-      {selectedBill && showPayModal && (
+      {selectedBill && (
+        <CustomerBillModal
+          bill={selectedBill}
+          tariffs={tariffs}
+          charges={charges}
+          onClose={handleCloseModal}
+          onPay={() => setShowPayModal(true)}
+        />
+      )}
+
+      {showPayModal && selectedBill && (
         <PayNowModal
           bill={selectedBill}
           onClose={() => {
@@ -172,16 +218,6 @@ const CustomerBills = () => {
             setError("");
           }}
           onSubmit={handlePayNow}
-        />
-      )}
-
-      {selectedBill && !showPayModal && (
-        <CustomerBillModal
-          bill={selectedBill}
-          tariffs={tariffs}
-          charges={charges}
-          onClose={handleCloseModal}
-          onPay={() => setShowPayModal(true)}
         />
       )}
 
