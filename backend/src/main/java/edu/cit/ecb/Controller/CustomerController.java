@@ -83,11 +83,21 @@ public class CustomerController {
     @GetMapping("/profile/image/{accountId}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<byte[]> getProfileImage(@PathVariable int accountId) {
-        UserEntity customer = cserv.findByAccountId(accountId);
-        if (customer == null || customer.getCustomerImage() == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        try {
+            UserEntity customer = cserv.findByAccountId(accountId);
+            if (customer == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            if (customer.getCustomerImage() == null || customer.getCustomerImage().length == 0) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.ok()
+                .header("Content-Type", "image/jpeg")
+                .header("Content-Length", String.valueOf(customer.getCustomerImage().length))
+                .body(customer.getCustomerImage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.ok().header("Content-Type", "image/jpeg").body(customer.getCustomerImage());
     }
 
     // Signup - Create Customer Account (Default role is CUSTOMER)
@@ -141,15 +151,25 @@ public class CustomerController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<?> uploadCustomerImage(@RequestParam("accountId") int accountId, @RequestParam("ownerImage") MultipartFile file) {
         try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Please select a file to upload");
+            }
+
+            if (!file.getContentType().startsWith("image/")) {
+                return ResponseEntity.badRequest().body("Only image files are allowed");
+            }
+
             UserEntity customer = cserv.findByAccountId(accountId);
             if (customer == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
             }
+
             customer.setCustomerImage(file.getBytes());
             cserv.save(customer);
             return ResponseEntity.ok("Image uploaded successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading image: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error uploading image: " + e.getMessage());
         }
     }
 
@@ -157,25 +177,24 @@ public class CustomerController {
     @PutMapping("/profile/edit/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<?> editProfile(@PathVariable int id, @RequestBody UserEntity updatedProfile) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUsername = auth.getName();
-
-        UserEntity loggedInUser = userRepository.findByUsername(currentUsername);
-
-        if (loggedInUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
-        }
-
-        if (loggedInUser.getAccountId() != id) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only update your own profile.");
-        }
-
         try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String currentUsername = auth.getName();
+
+            UserEntity loggedInUser = userRepository.findByUsername(currentUsername);
+            if (loggedInUser == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            }
+
+            if (loggedInUser.getAccountId() != id) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only update your own profile");
+            }
+
             UserEntity updated = cserv.updateProfile(id, updatedProfile);
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update profile.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to update profile: " + e.getMessage());
         }
     }
 

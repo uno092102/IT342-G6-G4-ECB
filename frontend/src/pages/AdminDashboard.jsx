@@ -39,9 +39,11 @@ const AdminDashboard = () => {
 
         const paid = billsRes.data.filter(b => b.status === "PAID").length;
         const pending = billsRes.data.filter(b => b.status === "PENDING").length;
+        const unpaid = billsRes.data.filter(b => b.status === "UNPAID").length;
         setPaymentStatusData([
-          { name: "Payments Done", value: paid },
-          { name: "Payments Pending", value: pending },
+          { name: "Paid", value: paid },
+          { name: "Pending", value: pending },
+          { name: "Unpaid", value: unpaid }
         ]);
 
         const grouped = {};
@@ -160,7 +162,7 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Recent Payments</h3>
           <button 
-            onClick={() => navigate('/admin/payments')}
+            onClick={() => navigate('/payments')}
             className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
           >
             See All

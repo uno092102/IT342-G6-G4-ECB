@@ -44,6 +44,13 @@ const Register = () => {
         <div className="w-full max-w-md">
           <h2 className="text-2xl font-bold mb-1">ECB Register</h2>
           <p className="text-sm text-gray-500 mb-6">Enter your information to register</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-4 text-indigo-600 hover:underline text-sm"
+          >
+            ← Back
+          </button>
+
           <form className="space-y-4" onSubmit={handleRegister}>
             <input name="fname" placeholder="First Name" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />
             <input name="lname" placeholder="Last Name" onChange={handleChange} className="w-full px-4 py-2 border rounded-md" />

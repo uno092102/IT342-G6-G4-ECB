@@ -39,7 +39,8 @@ const Sidebar = () => {
   const activeClass = "block px-4 py-2 rounded bg-indigo-600 text-white font-semibold";
 
   return (
-    <aside className="w-64 bg-white p-6 border-r">
+    <aside className="w-64 bg-white p-6 border-r flex flex-col h-screen">
+
       <div className="text-2xl font-bold text-indigo-600 mb-10">
         💡 Electricity <br /> Consumption <br /> Billing
       </div>
@@ -68,7 +69,7 @@ const Sidebar = () => {
       </nav>
       <button
         onClick={handleLogout}
-        className="mt-10 w-full bg-indigo-600 text-white py-2 rounded-full flex items-center justify-center gap-2">
+        className="mt-auto w-full bg-indigo-600 text-white py-2 rounded-full flex items-center justify-center gap-2">
         <IoIosLogOut size={18} /> Logout
       </button>
     </aside>
