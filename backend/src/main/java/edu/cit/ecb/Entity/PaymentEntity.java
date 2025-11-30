@@ -1,109 +1,65 @@
 package edu.cit.ecb.Entity;
 
-import java.sql.Date;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Date;
 
 @Entity
+@Table(name = "payments")
 public class PaymentEntity {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int paymentId;
-
-    private Date paymentDate;
-    private String paymentMethod;
-    private double amountPaid;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "billId", nullable = false)
-    @JsonManagedReference(value = "bill-payment")
+    
+    @ManyToOne
+    @JoinColumn(name = "bill_id", nullable = false)
+    @JsonIgnore
     private BillEntity bill;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "accountId", nullable = false)
-    @JsonManagedReference(value = "user-payment")
-    private UserEntity customer;
-
-    public PaymentEntity() {
-        super();
-    }
-
-    public PaymentEntity(int paymentId, Date paymentDate, String paymentMethod, double amountPaid, BillEntity bill, UserEntity customer) {
-        super();
-        this.paymentId = paymentId;
-        this.paymentDate = paymentDate;
-        this.paymentMethod = paymentMethod;
-        this.amountPaid = amountPaid;
+    
+    @Temporal(TemporalType.DATE)
+    @Column(name = "payment_date")
+    private Date paymentDate;
+    
+    @Column(name = "payment_method")
+    private String paymentMethod;
+    
+    @Column(name = "amount_paid")
+    private float amountPaid;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
+    
+    public PaymentEntity() {}
+    
+    public PaymentEntity(BillEntity bill, float amountPaid) {
         this.bill = bill;
-        this.customer = customer;
-    }
-
-    public int getPaymentId() {
-        return paymentId;
-    }
-
-    public void setPaymentId(int paymentId) {
-        this.paymentId = paymentId;
-    }
-
-    public Date getPaymentDate() {
-        return paymentDate;
-    }
-
-    public void setPaymentDate(Date paymentDate) {
-        this.paymentDate = paymentDate;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public double getAmountPaid() {
-        return amountPaid;
-    }
-
-    public void setAmountPaid(double amountPaid) {
         this.amountPaid = amountPaid;
-    }
-
-    public BillEntity getBill() {
-        return bill;
-    }
-
-    public void setBill(BillEntity bill) {
-        this.bill = bill;
-    }
-
-    public UserEntity getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(UserEntity customer) {
-        this.customer = customer;
+        this.paymentDate = new Date();
     }
     
-    @JsonProperty("billId")
-    public Integer getBillId() {
-        return bill != null ? bill.getBillId() : null;
+    public int getPaymentId() { return paymentId; }
+    public void setPaymentId(int paymentId) { this.paymentId = paymentId; }
+    
+    public BillEntity getBill() { return bill; }
+    public void setBill(BillEntity bill) { this.bill = bill; }
+    
+    public Date getPaymentDate() { return paymentDate; }
+    public void setPaymentDate(Date paymentDate) { this.paymentDate = paymentDate; }
+    
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    
+    public float getAmountPaid() { return amountPaid; }
+    public void setAmountPaid(float amountPaid) { this.amountPaid = amountPaid; }
+    
+    public Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+    
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) createdAt = new Date();
+        if (paymentDate == null) paymentDate = new Date();
     }
-
-    @JsonProperty("customerName")
-    public String getCustomerName() {
-        return customer != null ? customer.getFname() + " " + customer.getLname() : "";
-    }
-}   
+}

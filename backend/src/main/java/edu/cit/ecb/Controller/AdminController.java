@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import edu.cit.ecb.DTO.CustomerDTO;
 import edu.cit.ecb.DTO.UserUpdateDTO;
 import edu.cit.ecb.Entity.UserEntity;
 import edu.cit.ecb.Repository.UserRepository;
@@ -48,8 +49,22 @@ public class AdminController {
     // Get All Customers
     @GetMapping("/customers")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public List<UserEntity> getAllCustomers() {
-        return customerService.getAllCustomers();
+    public List<CustomerDTO> getAllCustomers() {
+        List<UserEntity> allUsers = customerService.getAllCustomers();
+        return allUsers.stream()
+                .filter(user -> user.getRole().toString().equals("CUSTOMER"))
+                .map(user -> {
+                    CustomerDTO dto = new CustomerDTO();
+                    dto.setAccountId(user.getAccountId());
+                    dto.setFname(user.getFname());
+                    dto.setLname(user.getLname());
+                    dto.setEmail(user.getEmail());
+                    dto.setPhoneNumber(user.getPhoneNumber());
+                    dto.setAddress(user.getAddress());
+                    dto.setUsername(user.getUsername());
+                    return dto;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // Update Customer Role

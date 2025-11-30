@@ -54,9 +54,24 @@ public class PaymentController {
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<PaymentEntity>> getPaymentsByCustomer(@PathVariable int customerId) {
-        List<PaymentEntity> payments = pserv.getPaymentRecordsByCustomer(customerId);
-        return ResponseEntity.ok(payments != null ? payments : new ArrayList<>());
+    public ResponseEntity<?> getPaymentsByCustomer(@PathVariable int customerId) {
+        try {
+            System.out.println("===== Fetching payments for customer ID: " + customerId + " =====");
+            
+            List<PaymentEntity> payments = pserv.getPaymentRecordsByCustomer(customerId);
+            System.out.println("Payments fetched successfully. Count: " + (payments != null ? payments.size() : 0));
+            
+            if (payments == null) {
+                payments = new ArrayList<>();
+            }
+            
+            return ResponseEntity.ok(payments);
+            
+        } catch (Exception e) {
+            System.err.println("===== ERROR fetching payments: " + e.getMessage() + " =====");
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error fetching payments: " + e.getMessage());
+        }
     }
 
     @GetMapping("/bill/{billId}")
@@ -73,7 +88,6 @@ public class PaymentController {
             String paymentMethod = (String) paymentRequest.get("paymentMethod");
             String paymentDateStr = (String) paymentRequest.get("paymentDate");
 
-            // Round the amount to 2 decimal places
             BigDecimal roundedAmount = new BigDecimal(amountPaid).setScale(2, RoundingMode.HALF_UP);
             amountPaid = roundedAmount.doubleValue();
 
@@ -82,21 +96,11 @@ public class PaymentController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bill not found.");
             }
 
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
-            UserEntity customer = cserv.findByUsername(username);
-
-            if (customer == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated.");
-            }
-
             PaymentEntity payment = new PaymentEntity();
             payment.setBill(bill);
-            payment.setCustomer(customer);
-            payment.setAmountPaid(amountPaid);
+            payment.setAmountPaid((float) amountPaid);
             payment.setPaymentMethod(paymentMethod);
             
-            // Parse the payment date from the request
             Date paymentDate = paymentDateStr != null ? Date.valueOf(paymentDateStr) : new Date(System.currentTimeMillis());
             payment.setPaymentDate(paymentDate);
 

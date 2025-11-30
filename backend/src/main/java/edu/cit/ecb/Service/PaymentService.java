@@ -30,7 +30,6 @@ public class PaymentService {
         List<PaymentEntity> list = prepo.findAll();
         return list != null ? list : new ArrayList<>();
     }
-    
 
     public PaymentEntity savePaymentRecord(PaymentEntity payment){
         return prepo.save(payment);
@@ -59,10 +58,17 @@ public class PaymentService {
     }
 
     public List<PaymentEntity> getPaymentRecordsByCustomer(int customerId) {
-        List<PaymentEntity> list = prepo.findByCustomer_AccountId(customerId);
-        return list != null ? list : new ArrayList<>();
+        try {
+            System.out.println("DEBUG: getPaymentRecordsByCustomer called with customerId: " + customerId);
+            List<PaymentEntity> payments = prepo.findByBill_Customer_AccountId(customerId);
+            System.out.println("DEBUG: Found " + (payments != null ? payments.size() : "null") + " payments");
+            return payments;
+        } catch (Exception e) {
+            System.err.println("ERROR in getPaymentRecordsByCustomer: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
-    
     
     public PaymentEntity addPayment(PaymentEntity paymentRequest) {
         try {
@@ -78,10 +84,9 @@ public class PaymentService {
 
             // Create payment entry
             PaymentEntity payment = new PaymentEntity();
-            payment.setPaymentDate(new Date(System.currentTimeMillis()));
+            payment.setPaymentDate(bill.getBillDate());
             payment.setPaymentMethod(paymentRequest.getPaymentMethod());
-            payment.setAmountPaid(amountToPay);
-            payment.setCustomer(paymentRequest.getCustomer());
+            payment.setAmountPaid((float) amountToPay);
             payment.setBill(bill);
 
             // Save payment

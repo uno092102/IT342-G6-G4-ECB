@@ -74,7 +74,6 @@ public class UserService {
         if(customerOptional.isPresent()){
             UserEntity customer = customerOptional.get();
             customer.getBills().clear();
-            customer.getPayments().clear();
             crepo.delete(customer);
 
             return "Customer with ID \"" + id + "\" record successfully deleted";

@@ -1,18 +1,15 @@
 package edu.cit.ecb.Controller;
 
-import edu.cit.ecb.Entity.BillEntity;
-import edu.cit.ecb.Entity.ConsumptionEntity;
-import edu.cit.ecb.Entity.UserEntity;
-import edu.cit.ecb.Service.BillService;
-import edu.cit.ecb.Service.ConsumptionService;
-import edu.cit.ecb.Service.UserService;
-import edu.cit.ecb.Utility.PreAuthorize;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import edu.cit.ecb.Entity.BillEntity;
+import edu.cit.ecb.Service.BillService;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -22,102 +19,75 @@ public class BillController {
     @Autowired
     private BillService billService;
 
-    @Autowired
-    private UserService customerService;
-
-    @Autowired
-    private ConsumptionService consumptionService;
-
-    @PostMapping("/generate/{customerId}/{consumptionId}")
-    @PreAuthorize("hasAuthority('SCOPE_write')")
-    public ResponseEntity<?> generateBill(@PathVariable int customerId, @PathVariable int consumptionId) {
-        try {
-            UserEntity customer = customerService.findByAccountId(customerId);
-            if (customer == null) {
-                return ResponseEntity.status(404).body("Customer not found with ID: " + customerId);
-            }
-
-            ConsumptionEntity consumption = consumptionService.getConsumptionById(consumptionId).orElse(null);
-            if (consumption == null) {
-                return ResponseEntity.status(404).body("Consumption not found with ID: " + consumptionId);
-            }
-
-            BillEntity bill = new BillEntity();
-            bill.setCustomer(customer);
-            bill.setConsumption(consumption);
-
-            // 🟢 Set billDate as the end of the period
-            java.sql.Date periodTo = consumption.getPeriodTo();
-            bill.setBillDate(periodTo);
-
-            // 🟢 Set dueDate 30 days after the end of the period
-            long thirtyDays = 30L * 24 * 60 * 60 * 1000;
-            bill.setDueDate(new java.sql.Date(periodTo.getTime() + thirtyDays));
-
-            bill.setTotalAmount(0); // Placeholder
-            billService.calculateTotalBill(bill);
-
-            return ResponseEntity.ok(billService.postBill(bill));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error generating bill: " + e.getMessage());
-        }
-    }
-
-
-    // Get all bills
+    // ✅ PUT SPECIFIC PATHS FIRST (before generic {billId})
     @GetMapping("/getAllBills")
-    @PreAuthorize("hasAuthority('SCOPE_read')")
-    public List<BillEntity> getAllBills() {
-        return billService.getAllBill();
-    }
-
-    // Get a specific bill by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getBillById(@PathVariable int id) {
+    public ResponseEntity<?> getAllBills() {
         try {
-            BillEntity bill = billService.findBillById(id);
-            return ResponseEntity.ok(bill);
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body("Bill not found with ID: " + id);
-        }
-    }
-
-    // ✅ GET bills by customer ID
-// ✅ GET bills by customer ID
-    @GetMapping("/customer/{id}")
-    @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<?> getBillsByCustomerId(@PathVariable int id) {
-        try {
-            List<BillEntity> bills = billService.getBillsByCustomerId(id);
+            List<BillEntity> bills = billService.getAllBill();
             return ResponseEntity.ok(bills);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error fetching bills: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error fetching all bills: " + e.getMessage()));
         }
     }
 
-
-
-    // Update a Bill with Recalculation
-    @PutMapping("/update/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_write')")
-    public ResponseEntity<?> updateBill(@PathVariable int id, @RequestBody BillEntity updatedBill) {
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<?> getBillsByCustomerId(@PathVariable int customerId) {
         try {
-            BillEntity bill = billService.updateBill(id, updatedBill);
+            List<BillEntity> bills = billService.getBillsByCustomerId(customerId);
+            return ResponseEntity.ok(bills);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error fetching bills: " + e.getMessage()));
+        }
+    }
+
+    // ✅ GENERIC PATH VARIABLES GO LAST
+    @GetMapping("/{billId}")
+    public ResponseEntity<?> getBillById(@PathVariable int billId) {
+        try {
+            BillEntity bill = billService.findBillById(billId);
+            if (bill == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Bill not found"));
+            }
             return ResponseEntity.ok(bill);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error updating bill: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error fetching bill: " + e.getMessage()));
         }
     }
 
-    // Delete a Bill
-    @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_write')")
-    public ResponseEntity<String> deleteBill(@PathVariable int id) {
+    @PostMapping("/add")
+    public ResponseEntity<?> addBill(@RequestBody BillEntity bill) {
         try {
-            String message = billService.deleteBill(id);
-            return ResponseEntity.ok(message);
+            BillEntity savedBill = billService.postBill(bill);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedBill);
         } catch (Exception e) {
-            return ResponseEntity.status(404).body("Bill not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error creating bill: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/update/{billId}")
+    public ResponseEntity<?> updateBill(@PathVariable int billId, @RequestBody BillEntity billDetails) {
+        try {
+            BillEntity updatedBill = billService.updateBill(billId, billDetails);
+            return ResponseEntity.ok(updatedBill);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error updating bill: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/delete/{billId}")
+    public ResponseEntity<?> deleteBill(@PathVariable int billId) {
+        try {
+            String message = billService.deleteBill(billId);
+            return ResponseEntity.ok(Map.of("message", message));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error deleting bill: " + e.getMessage()));
         }
     }
 }

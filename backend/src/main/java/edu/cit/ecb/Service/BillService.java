@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,7 +80,13 @@ public class BillService {
     }
 
     public List<BillEntity> getBillsByCustomerId(int customerId) {
-        return brepo.findByCustomer_AccountId(customerId);
+        try {
+            return brepo.findByCustomer_AccountId(customerId);
+        } catch (Exception e) {
+            System.err.println("Error fetching bills for customer " + customerId + ": " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public BillEntity updateBill(int id, BillEntity updatedBill) {

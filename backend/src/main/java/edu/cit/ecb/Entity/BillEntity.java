@@ -1,128 +1,82 @@
 package edu.cit.ecb.Entity;
 
-import java.sql.Date;
-import java.sql.Timestamp;
+import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Date;
 import java.util.List;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import com.fasterxml.jackson.annotation.*;
-import jakarta.persistence.*;
-
-
 @Entity
+@Table(name = "bills")
 public class BillEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "billid")
     private int billId;
-
-    private Date billDate;
-    private float totalAmount;
-    private Date dueDate;
-    private String status; // Added Status Field
-    @CreationTimestamp
-    @Column(updatable = false)
-    private Timestamp createdAt;
-
+    
     @ManyToOne
-    @JoinColumn(name = "accountId", nullable = false)
-    @JsonManagedReference(value = "user-bill")
+    @JoinColumn(name = "account_id", nullable = false)
+    @JsonIgnore  // Prevent circular reference
     private UserEntity customer;
-
-    @ManyToOne
-    @JoinColumn(name = "consumptionId", nullable = false)
-    @JsonManagedReference
-    private ConsumptionEntity consumption; // Added Relationship
-
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "bill-payment")
+    
+    @OneToOne
+    @JoinColumn(name = "consumption_id", nullable = true)
+    @JsonIgnore  // Prevent circular reference
+    private ConsumptionEntity consumption;
+    
+    @Temporal(TemporalType.DATE)
+    @Column(name = "bill_date")
+    private Date billDate;
+    
+    @Temporal(TemporalType.DATE)
+    @Column(name = "due_date")
+    private Date dueDate;
+    
+    @Column(name = "total_amount")
+    private float totalAmount;
+    
+    @Column(name = "status", nullable = false)
+    private String status = "UNPAID";
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", updatable = false)
+    private Date createdAt;
+    
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL)
+    @JsonIgnore  // Prevent circular reference
     private List<PaymentEntity> payments;
-
+    
     // Constructors
-    public BillEntity() {
-        super();
-    }
-
-    public BillEntity(int billId, Date billDate, float totalAmount, Date dueDate, UserEntity customer, ConsumptionEntity consumption, String status) {
-        super();
-        this.billId = billId;
-        this.billDate = billDate;
-        this.totalAmount = totalAmount;
-        this.dueDate = dueDate;
+    public BillEntity() {}
+    
+    public BillEntity(UserEntity customer, ConsumptionEntity consumption) {
         this.customer = customer;
         this.consumption = consumption;
-        this.status = status;
+        this.status = "UNPAID";
     }
-
-    // Getters
-    public Date getBillDate() {
-        return billDate;
-    }
-
-    public int getBillId() {
-        return billId;
-    }
-
-    public UserEntity getCustomer() {
-        return customer;
-    }
-
-    public Date getDueDate() {
-        return dueDate;
-    }
-
-    public float getTotalAmount() {
-        return totalAmount;
-    }
-
-    public List<PaymentEntity> getPayments() {
-        return payments;
-    }
-
-    public ConsumptionEntity getConsumption() {
-        return consumption;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    // Setters
-    public void setBillDate(Date billDate) {
-        this.billDate = billDate;
-    }
-
-    public void setBillId(int billId) {
-        this.billId = billId;
-    }
-
-    public void setCustomer(UserEntity customer) {
-        this.customer = customer;
-    }
-
-    public void setDueDate(Date dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public void setTotalAmount(float totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public void setPayments(List<PaymentEntity> payments) {
-        this.payments = payments;
-    }
-
-    public void setConsumption(ConsumptionEntity consumption) {
-        this.consumption = consumption;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    
+    // Getters and Setters
+    public int getBillId() { return billId; }
+    public void setBillId(int billId) { this.billId = billId; }
+    public UserEntity getCustomer() { return customer; }
+    public void setCustomer(UserEntity customer) { this.customer = customer; }
+    public ConsumptionEntity getConsumption() { return consumption; }
+    public void setConsumption(ConsumptionEntity consumption) { this.consumption = consumption; }
+    public Date getBillDate() { return billDate; }
+    public void setBillDate(Date billDate) { this.billDate = billDate; }
+    public Date getDueDate() { return dueDate; }
+    public void setDueDate(Date dueDate) { this.dueDate = dueDate; }
+    public float getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(float totalAmount) { this.totalAmount = totalAmount; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+    public List<PaymentEntity> getPayments() { return payments; }
+    public void setPayments(List<PaymentEntity> payments) { this.payments = payments; }
+    
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) createdAt = new Date();
+        if (status == null || status.isEmpty()) status = "UNPAID";
     }
 }
