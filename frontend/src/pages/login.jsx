@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { normalizeArrayResponse } from '../utils/normalize';
-
 import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import api from '../api/apiConfig';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,45 +11,34 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const params = new URLSearchParams();
-      params.append('username', usernameOrEmail);
-      params.append('password', password);
-  
-      const response = await fetch(`${process.env.REACT_APP_API_BASE}/customer/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, // important json if you fix backend too
-        body: JSON.stringify({
-          username: usernameOrEmail,
-          password: password
-        }),
+      const response = await api.post('/customer/login', {
+        username: usernameOrEmail,
+        password: password
       });
-  
-      if (response.ok) {
-        const userData = await response.json();
+
+      if (response.status === 200) {
+        const userData = response.data;
         localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("token", userData.token); // Save the token separately!
-  
+        localStorage.setItem("token", userData.token);
+
         if (userData.role === "ADMIN") {
           navigate("/admin/dashboard");
         } else if (userData.role === "CUSTOMER") {
           navigate("/dashboard");
         }
-      } else {
-        const msg = await response.text();
-        setError(msg);
       }
     } catch (err) {
-      setError("Server not available.");
+      setError(err.response?.data || "Server not available.");
     }
   };
-  
 
   const handleSignup = () => {
     navigate("/register");
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.REACT_APP_API_BASE}/oauth2/authorization/google`;
+    const baseURL = api.defaults.baseURL;
+    window.location.href = `${baseURL}/oauth2/authorization/google`;
   };
 
   return (

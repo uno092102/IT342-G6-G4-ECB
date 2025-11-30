@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Create Axios instance
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE || 'http://localhost:8080',
+  baseURL: 'http://localhost:8080',  // Change to local backend
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

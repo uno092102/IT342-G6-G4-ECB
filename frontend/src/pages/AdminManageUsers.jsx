@@ -20,7 +20,8 @@ const AdminManageUsers = () => {
   const fetchUsers = async () => {
     try {
       const res = await api.get("/admin/customers");
-      setUsers(res.data);
+      const usersData = Array.isArray(res.data) ? res.data : res.data?.data || [];
+      setUsers(usersData);
     } catch (err) {
       console.error("Error fetching users:", err);
     }

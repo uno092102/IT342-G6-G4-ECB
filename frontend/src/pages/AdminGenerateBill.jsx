@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { normalizeArrayResponse } from '../utils/normalize';
-
 import api from "../api/apiConfig";
 
 const AddConsumption = () => {
   const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     customerId: "",
     periodFrom: "",
@@ -18,10 +18,26 @@ const AddConsumption = () => {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
+        setLoading(true);
+        setError("");
         const res = await api.get("/admin/customers");
-        setCustomers(res.data);
+
+        console.log("API Response:", res.data); // Debug log
+
+        // API already returns only CUSTOMER users, no need to filter
+        const customersData = Array.isArray(res.data) ? res.data : [];
+
+        console.log("Processed customers:", customersData); // Debug log
+
+        if (customersData.length === 0) {
+          setError("No customers found in database.");
+        }
+        setCustomers(customersData);
       } catch (err) {
         console.error("Error fetching customers:", err);
+        setError(`Failed to load customers: ${err.message}`);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCustomers();
@@ -86,6 +102,15 @@ const AddConsumption = () => {
     <div className="bg-white shadow rounded-lg p-6 space-y-6">
       <h2 className="text-xl font-bold">Generate Customer Bill</h2>
 
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>
+      )}
+      {loading && (
+        <div className="mb-4 p-3 bg-blue-100 text-blue-700 rounded">
+          Loading customers...
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">Customer</label>
@@ -94,14 +119,22 @@ const AddConsumption = () => {
             value={form.customerId}
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
+            disabled={loading}
           >
             <option value="">-- Select Customer --</option>
-            {customers.map((cust) => (
-              <option key={cust.accountId} value={cust.accountId}>
-                {cust.fname} {cust.lname}
-              </option>
-            ))}
+            {customers && customers.length > 0 ? (
+              customers.map((cust) => (
+                <option key={cust.accountId} value={cust.accountId}>
+                  {cust.fname} {cust.lname} (ID: {cust.accountId})
+                </option>
+              ))
+            ) : (
+              <option disabled>No customers available</option>
+            )}
           </select>
+          <small className="text-gray-500">
+            Total customers: {customers.length}
+          </small>
         </div>
 
         <div>
@@ -151,12 +184,15 @@ const AddConsumption = () => {
 
       <button
         onClick={handleSubmit}
-        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
+        disabled={loading}
       >
         Submit
       </button>
 
-      {message && <div className="mt-4 text-sm font-medium text-center">{message}</div>}
+      {message && (
+        <div className="mt-4 text-sm font-medium text-center">{message}</div>
+      )}
     </div>
   );
 };

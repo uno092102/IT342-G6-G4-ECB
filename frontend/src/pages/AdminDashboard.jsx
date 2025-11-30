@@ -26,19 +26,23 @@ const AdminDashboard = () => {
           api.get("/bills/getAllBills"),
         ]);
 
-        setTotalUsers(usersRes.data.length);
+        const users = Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.data || [];
+        setTotalUsers(users.length);
 
-        const totalPaid = paymentsRes.data.reduce((sum, p) => sum + p.amountPaid, 0);
+        const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : paymentsRes.data?.data || [];
+        const totalPaid = payments.reduce((sum, p) => sum + p.amountPaid, 0);
         setTotalPayments(totalPaid);
 
-        const totalKwh = consumptionRes.data.reduce((sum, c) => sum + (c.totalKwh || 0), 0);
+        const consumptions = Array.isArray(consumptionRes.data) ? consumptionRes.data : consumptionRes.data?.data || [];
+        const totalKwh = consumptions.reduce((sum, c) => sum + (c.totalKwh || 0), 0);
         setTotalConsumption(totalKwh);
 
-        const unpaidBills = billsRes.data.filter(b => b.status === "UNPAID" || b.status === "PENDING").length;
+        const bills = Array.isArray(billsRes.data) ? billsRes.data : billsRes.data?.data || [];
+        const unpaidBills = bills.filter(b => b.status === "UNPAID" || b.status === "PENDING").length;
         setUnpaidBillsCount(unpaidBills);
 
-        const paid = billsRes.data.filter(b => b.status === "PAID").length;
-        const pending = billsRes.data.filter(b => b.status === "PENDING").length;
+        const paid = bills.filter(b => b.status === "PAID").length;
+        const pending = bills.filter(b => b.status === "PENDING").length;
         setPaymentStatusData([
           { name: "Payments Done", value: paid },
           { name: "Payments Pending", value: pending },
@@ -46,7 +50,7 @@ const AdminDashboard = () => {
 
         const grouped = {};
         const currentYear = new Date().getFullYear();
-        consumptionRes.data.forEach((c) => {
+        consumptions.forEach((c) => {
           const date = new Date(c.createdAt || c.periodTo);
           if (date.getFullYear() === currentYear) {
             const month = date.toLocaleString("default", { month: "short" });
@@ -56,7 +60,7 @@ const AdminDashboard = () => {
         const monthlyData = Object.keys(grouped).map((m) => ({ month: m, kWh: grouped[m] }));
         setConsumptionChart(monthlyData);
 
-        const latest = paymentsRes.data
+        const latest = payments
           .slice()
           .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
           .slice(0, 5)

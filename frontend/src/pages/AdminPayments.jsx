@@ -12,7 +12,8 @@ const AdminPayments = () => {
     const fetchPayments = async () => {
       try {
         const res = await api.get("/payments/");
-        setPayments(res.data);
+        const paymentsData = Array.isArray(res.data) ? res.data : res.data?.data || [];
+        setPayments(paymentsData);
       } catch (err) {
         console.error("Error fetching payments:", err);
       }
